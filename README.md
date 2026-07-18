@@ -1,15 +1,15 @@
-# Sola Programming Language — v0
+# Simo Programming Language — v0 Documentation
 
 ## 1. Core Philosophy
 
-- **Name:** Sola (means "Sun" / "Pure, stand-alone") — the friendly sibling to Lua ("Moon")
-- **Vision:** "Simplicity at the Speed of Light." Plain English instead of coding jargon.
-- **File extension:** `.sola`
+- **Name:** Simo — short for "Simple," reflecting the language's core goal: plain English instead of coding jargon.
+- **Vision:** "Simplicity at the Speed of Light." Write code the way you'd explain it to a friend.
+- **File extension:** `.simo`
 - **Goal:** Write one file. Build it as a website, a desktop app, or a game — same syntax, different build target.
 
 ```
-sola build main.sola --target web     → HTML/CSS/JS (runs in browser)
-sola build main.sola --target app     → Desktop app (Electron-style)
+simo build main.simo --target web     → HTML/CSS/JS (runs in browser)
+simo build main.simo --target app     → Desktop app (Electron-style)
 ```
 
 ---
@@ -21,7 +21,7 @@ sola build main.sola --target app     → Desktop app (Electron-style)
 | `set` | Changeable variable | `set score = 100` |
 | `fix` | Locked/constant variable | `fix pi = 3.14` |
 
-```sola
+```simo
 set score = 100
 fix max_players = 10
 score = score + 1     // OK
@@ -34,7 +34,7 @@ max_players = 20      // ERROR: max_players is fixed
 
 Types are inferred automatically — no manual type declarations.
 
-```sola
+```simo
 set name = "Alex"                          // text
 set score = 100                            // number
 set is_ready = true    // or: yes          // boolean (true/false and yes/no both work)
@@ -46,7 +46,7 @@ set player = { name: "Alex", score: 100 }  // group (object)
 
 ## 4. Functions — `action`
 
-```sola
+```simo
 action greet(name)
     say("Hello, " + name)
 end
@@ -64,7 +64,7 @@ set total = add(5, 3)
 
 ## 5. Output — `say`
 
-```sola
+```simo
 say("Hello World")
 say("Score: " + score)
 ```
@@ -73,7 +73,7 @@ say("Score: " + score)
 
 ## 6. Conditionals
 
-```sola
+```simo
 if score == 100 or score is 100     // == and "is" both work
     say("Perfect")
 else if score is not 0
@@ -89,7 +89,7 @@ Logic words: `and`, `or`, `not`.
 
 ## 7. Loops — `loop`
 
-```sola
+```simo
 loop 5 times
     say("Hi")
 end
@@ -109,7 +109,7 @@ end
 
 ## 8. Lists & Objects
 
-```sola
+```simo
 set fruits = ["apple", "pear"]
 add "grape" to fruits
 remove "apple" from fruits
@@ -123,7 +123,7 @@ change score of player to 50
 
 ## 9. Error Handling
 
-```sola
+```simo
 attempt
     set result = 10 / 0
 if it fails
@@ -141,7 +141,7 @@ end
 | `wait(seconds)` | Pause for a fixed amount of time |
 | `wait until ___ and ___` | Pause until specific background tasks finish |
 
-```sola
+```simo
 start download_data()
 start load_assets()
 wait until download_data() and load_assets()
@@ -152,7 +152,7 @@ say("Both finished")
 
 ## 11. Comments
 
-```sola
+```simo
 // quick comment
 note: more beginner-readable comment (both work, functionally identical)
 ```
@@ -163,10 +163,10 @@ note: more beginner-readable comment (both work, functionally identical)
 
 One syntax, works for web AND desktop (and eventually mobile) via build target.
 
-```sola
+```simo
 page "My App" size 400x600 {
 
-    show heading "Welcome to Sola" size big color blue
+    show heading "Welcome to Simo" size big color blue
 
     show button "Click Me" {
         when clicked:
@@ -184,7 +184,7 @@ page "My App" size 400x600 {
 ### Attribute rule
 Any `show` element takes a `{ }` block of `attribute_name value` pairs — no `=`, no quotes unless it's text.
 
-```sola
+```simo
 show button "Play" {
     size 150x50
     color red
@@ -195,7 +195,7 @@ show button "Play" {
 
 ### Images
 
-```sola
+```simo
 show image "cat.png"
 
 show image "logo.png" {
@@ -215,7 +215,7 @@ show image "logo.png" {
 
 ### Platform-specific code
 
-```sola
+```simo
 if platform is "app"
     save tasks to file "tasks.txt"
 else
@@ -228,14 +228,14 @@ end
 ## 13. Making a Game
 
 ### Scene
-```sola
+```simo
 scene "Level 1" size 800x600 {
     background color skyblue
 }
 ```
 
 ### Sprite
-```sola
+```simo
 sprite player {
     image "player.png"
     x = 100
@@ -247,7 +247,7 @@ sprite player {
 ### Game loop — `every frame`
 Runs continuously (~60 times/second).
 
-```sola
+```simo
 every frame
     if key "right" is down
         player.x = player.x + player.speed
@@ -256,7 +256,7 @@ end
 ```
 
 ### Collision
-```sola
+```simo
 if player touches coin
     remove coin
     score = score + 10
@@ -267,7 +267,7 @@ end
 
 ## 14. Input — Keyboard, Mouse, Touch
 
-```sola
+```simo
 // Keyboard
 if key "space" is pressed    // fires once
 if key "right" is down        // true while held
@@ -285,7 +285,7 @@ if touch is released
 
 ### Unified input — `control` (works across keyboard/touch/mouse automatically)
 
-```sola
+```simo
 control "jump" {
     key "space"
     touch tap
@@ -319,7 +319,7 @@ Write gameplay logic once — it works on keyboard, mouse, or touch without rewr
 | `delta_time` | Seconds since the last frame — use for movement/timers so speed is consistent across devices |
 
 ### Cooldown example
-```sola
+```simo
 set last_ability_time = 0
 fix cooldown_length = 5
 
@@ -336,7 +336,7 @@ end
 ```
 
 ### Optional built-in shortcut
-```sola
+```simo
 cooldown ability_cd length 5
 
 action use_ability()
@@ -353,13 +353,13 @@ end
 
 ## 16. Full Example Program
 
-```sola
+```simo
 set player_name = "Alex"
 fix max_score = 100
 set score = 0
 
 action welcome_sequence()
-    say("Loading Sola Engine...")
+    say("Loading Simo Engine...")
     say("Hello, " + player_name)
 end
 
@@ -394,16 +394,16 @@ say("Final score: " + score)
 9. **`ping`** — not yet defined; could mean network latency, a custom event signal, or a visual/audio map ping. Needs a decision on meaning before syntax.
 10. **`clock()`** — human-readable time (e.g. `"3:42 PM"`) separate from raw `time()`?
 11. **Standard library** — math functions, random numbers, string tools not yet speced.
-12. **Roblox/Luau target** — theoretically possible via a transpiler (Sola → Luau), same idea as `--target web`/`--target app`, but not yet designed.
+12. **Roblox/Luau target** — theoretically possible via a transpiler (Simo → Luau), same idea as `--target web`/`--target app`, but not yet designed.
 
 ---
 
 ## 18. What This Document Is For
 
-This file is the **language specification** — not a working interpreter yet. To turn Sola into a real, runnable language, the next step is to build:
+This file is the **language specification** — not a working interpreter yet. To turn Simo into a real, runnable language, the next step is to build:
 
-1. A **parser** (reads `.sola` files and understands the syntax)
-2. A **compiler/transpiler** (turns parsed Sola into HTML/CSS/JS for `--target web`, or another target later)
+1. A **parser** (reads `.simo` files and understands the syntax)
+2. A **compiler/transpiler** (turns parsed Simo into HTML/CSS/JS for `--target web`, or another target later)
 3. A **standard library** (built-in functions like `time()`, `say()`, list operations)
 
 This doc can be handed directly to a coding tool (like Claude Code) as the spec to build that interpreter/transpiler from.
