@@ -1,0 +1,92 @@
+name: Apply Simo 0.5 toolchain
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-simo-05.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct validated source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .simo-bootstrap/chunk* > /tmp/simo-full.b64
+          base64 --decode /tmp/simo-full.b64 > /tmp/simo-full.tar.gz
+          echo '84239adbbe7ef2ef4e7f67c4aaa37b5f00010e9ae77e72849b48bcaa95bce5d5  /tmp/simo-full.tar.gz' | sha256sum --check
+
+      - name: Replace repository tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          tar -xzf /tmp/simo-full.tar.gz
+
+      - name: Reject stale Sola identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE 'Sola|sola|\.sola' . --exclude-dir=.git --exclude-dir=__pycache__ --exclude='*.pyc'; then
+            echo 'Old Sola references remain.' >&2
+            exit 1
+          fi
+
+      - name: Compile Python package
+        run: python -m compileall -q simo tests
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate original example
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(python -m simo run examples/section16.simo)"
+          expected=$'Loading Simo Engine...\nHello, Alex\nMax score reached!\nFinal score: 120'
+          test "$actual" = "$expected"
+          printf '%s\n' "$actual"
+
+      - name: Validate web, app, and desktop targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m simo check examples/web/main.simo
+          python -m simo build examples/web/main.simo --target web --output /tmp/simo-web
+          test -f /tmp/simo-web/index.html
+          test -f /tmp/simo-web/styles.css
+          test -f /tmp/simo-web/app.js
+          python -m simo build examples/app/main.simo --target app --output /tmp/simo-app
+          test -f /tmp/simo-app/manifest.webmanifest
+          test -f /tmp/simo-app/service-worker.js
+          python -m simo build examples/web/main.simo --target desktop --output /tmp/simo-desktop
+          test -f /tmp/simo-desktop/src-tauri/tauri.conf.json
+          test -f /tmp/simo-desktop/DESKTOP.md
+
+      - name: Validate package metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/simo-installed
+          python -m pip install --no-deps --no-build-isolation --target /tmp/simo-installed .
+          PYTHONPATH=/tmp/simo-installed python -m simo --version
+
+      - name: Commit and push Simo 0.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Build Simo 0.5 web and app toolchain'
+          git push origin main
