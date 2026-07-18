@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/apply-simo-05.yml
+      - .simo-bootstrap/trigger
 
 permissions:
   contents: write
@@ -68,7 +69,7 @@ jobs:
           test -f /tmp/simo-web/app.js
           python -m simo build examples/app/main.simo --target app --output /tmp/simo-app
           test -f /tmp/simo-app/manifest.webmanifest
-          test -f /tmp/simo-app/service-worker.js
+          test -f /tmp/simo-app/sw.js
           python -m simo build examples/web/main.simo --target desktop --output /tmp/simo-desktop
           test -f /tmp/simo-desktop/src-tauri/tauri.conf.json
           test -f /tmp/simo-desktop/DESKTOP.md
