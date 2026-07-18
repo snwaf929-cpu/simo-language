@@ -1,4 +1,4 @@
-"""Command-line interface for the Sola interpreter."""
+"""Command-line interface for the Simo interpreter."""
 
 from __future__ import annotations
 
@@ -6,10 +6,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from sola.errors import SolaError
-from sola.interpreter import Interpreter
-from sola.lexer import Lexer
-from sola.parser import Parser
+from simo.errors import SimoError
+from simo.interpreter import Interpreter
+from simo.lexer import Lexer
+from simo.parser import Parser
 
 
 def run_file(path: Path, step_limit: int = 100_000) -> int:
@@ -28,21 +28,21 @@ def run_source(source: str, filename: str = "<stdin>", step_limit: int = 100_000
         program = Parser(tokens, filename).parse()
         Interpreter(filename=filename, step_limit=step_limit).interpret(program)
         return 0
-    except SolaError as exc:
+    except SimoError as exc:
         print(str(exc), file=sys.stderr)
         return 1
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="sola",
-        description="Run Sola source files.",
+        prog="simo",
+        description="Run Simo source files.",
     )
     parser.add_argument(
         "file",
         nargs="?",
         type=Path,
-        help="Path to a .sola source file",
+        help="Path to a .simo source file",
     )
     parser.add_argument(
         "--step-limit",
@@ -57,8 +57,8 @@ def main(argv: list[str] | None = None) -> int:
     args_list = list(sys.argv[1:] if argv is None else argv)
 
     if args_list and args_list[0] == "run":
-        run_parser = argparse.ArgumentParser(prog="sola run")
-        run_parser.add_argument("file", type=Path, help="Path to a .sola source file")
+        run_parser = argparse.ArgumentParser(prog="simo run")
+        run_parser.add_argument("file", type=Path, help="Path to a .simo source file")
         run_parser.add_argument(
             "--step-limit",
             type=int,

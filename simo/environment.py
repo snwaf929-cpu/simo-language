@@ -1,11 +1,11 @@
-"""Lexical environments for Sola execution."""
+"""Lexical environments for Simo execution."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from sola.errors import RuntimeError as SolaRuntimeError
+from simo.errors import RuntimeError as SimoRuntimeError
 
 
 @dataclass
@@ -31,7 +31,7 @@ class Environment:
         filename: str = "<stdin>",
     ) -> None:
         if name in self.bindings:
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Variable '{name}' is already defined in this scope",
                 filename,
                 line,
@@ -52,7 +52,7 @@ class Environment:
         env, binding = self._resolve_binding(name)
         if binding is not None:
             if binding.is_const:
-                raise SolaRuntimeError(
+                raise SimoRuntimeError(
                     f"Cannot reassign constant '{name}'",
                     filename,
                     line,
@@ -74,14 +74,14 @@ class Environment:
         """Handle bare assignment: update nearest existing binding only."""
         env, binding = self._resolve_binding(name)
         if binding is None:
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Undefined variable '{name}'",
                 filename,
                 line,
                 column,
             )
         if binding.is_const:
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Cannot reassign constant '{name}'",
                 filename,
                 line,
@@ -99,7 +99,7 @@ class Environment:
     ) -> Any:
         env, binding = self._resolve_binding(name)
         if binding is None:
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Undefined variable '{name}'",
                 filename,
                 line,
@@ -128,7 +128,7 @@ class Environment:
             if name in env.functions:
                 return env.functions[name]
             env = env.parent
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Undefined function '{name}'",
             filename,
             line,

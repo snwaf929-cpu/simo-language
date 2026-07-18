@@ -1,4 +1,4 @@
-"""Tests for the Sola interpreter."""
+"""Tests for the Simo interpreter."""
 
 from __future__ import annotations
 
@@ -6,20 +6,20 @@ import io
 import unittest
 from pathlib import Path
 
-from sola.cli import run_source
-from sola.errors import ParseError, RuntimeError as SolaRuntimeError
-from sola.lexer import Lexer
-from sola.parser import Parser
+from simo.cli import run_source
+from simo.errors import ParseError, RuntimeError as SimoRuntimeError
+from simo.lexer import Lexer
+from simo.parser import Parser
 
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
 
 
-def run_program(source: str, filename: str = "test.sola") -> tuple[int, str]:
+def run_program(source: str, filename: str = "test.simo") -> tuple[int, str]:
     buffer = io.StringIO()
-    from sola.interpreter import Interpreter
-    from sola.lexer import Lexer
-    from sola.parser import Parser
+    from simo.interpreter import Interpreter
+    from simo.lexer import Lexer
+    from simo.parser import Parser
 
     try:
         tokens = Lexer(source, filename).tokenize()
@@ -258,18 +258,18 @@ add(1)
 
     def test_parse_error_with_line_information(self) -> None:
         with self.assertRaises(ParseError) as ctx:
-            Parser(Lexer("set = 1", "bad.sola").tokenize(), "bad.sola").parse()
+            Parser(Lexer("set = 1", "bad.simo").tokenize(), "bad.simo").parse()
         self.assertEqual(ctx.exception.line, 1)
-        self.assertIn("bad.sola", str(ctx.exception))
+        self.assertIn("bad.simo", str(ctx.exception))
 
     def test_section16_example_output(self) -> None:
-        source = (EXAMPLES_DIR / "section16.sola").read_text(encoding="utf-8")
-        exit_code, output = run_program(source, "section16.sola")
+        source = (EXAMPLES_DIR / "section16.simo").read_text(encoding="utf-8")
+        exit_code, output = run_program(source, "section16.simo")
         self.assertEqual(exit_code, 0)
         self.assertEqual(
             output.splitlines(),
             [
-                "Loading Sola Engine...",
+                "Loading Simo Engine...",
                 "Hello, Alex",
                 "Max score reached!",
                 "Final score: 120",
@@ -282,7 +282,7 @@ add(1)
         self.assertIn("outside", message.lower())
 
     def test_cli_run_source_failure_exit_code(self) -> None:
-        self.assertEqual(run_source("say(missing)", "bad.sola"), 1)
+        self.assertEqual(run_source("say(missing)", "bad.simo"), 1)
 
 
 if __name__ == "__main__":

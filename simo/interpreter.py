@@ -1,13 +1,13 @@
-"""Tree-walking interpreter for Sola."""
+"""Tree-walking interpreter for Simo."""
 
 from __future__ import annotations
 
 import sys
 from typing import Any, Callable
 
-from sola import ast_nodes as ast
-from sola.environment import Environment
-from sola.errors import RuntimeError as SolaRuntimeError
+from simo import ast_nodes as ast
+from simo.environment import Environment
+from simo.errors import RuntimeError as SimoRuntimeError
 
 
 class ReturnSignal(Exception):
@@ -43,7 +43,7 @@ class Interpreter:
     def _tick(self, line: int = 0, column: int = 0) -> None:
         self._steps += 1
         if self._steps > self._step_limit:
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Execution step limit ({self._step_limit}) exceeded",
                 self._filename,
                 line,
@@ -94,7 +94,7 @@ class Interpreter:
 
         if isinstance(stmt, ast.ReturnStmt):
             if self._env is self._globals:
-                raise SolaRuntimeError(
+                raise SimoRuntimeError(
                     "'return' used outside of a function",
                     self._filename,
                     stmt.line,
@@ -129,7 +129,7 @@ class Interpreter:
                 self._execute_block(stmt.body)
             return None
 
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Unknown statement type: {type(stmt).__name__}",
             self._filename,
             stmt.line,
@@ -143,7 +143,7 @@ class Interpreter:
     def _define_user_function(self, decl: ast.ActionDecl) -> None:
         def callable_func(*args: Any) -> Any:
             if len(args) != len(decl.params):
-                raise SolaRuntimeError(
+                raise SimoRuntimeError(
                     f"Function '{decl.name}' expects {len(decl.params)} argument(s), got {len(args)}",
                     self._filename,
                     decl.line,
@@ -190,7 +190,7 @@ class Interpreter:
             if expr.operator == "-":
                 number = self._as_number(value, expr.line, expr.column, "operand of '-'")
                 return -number
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Unknown unary operator '{expr.operator}'",
                 self._filename,
                 expr.line,
@@ -217,7 +217,7 @@ class Interpreter:
             args = [self._evaluate(arg) for arg in expr.arguments]
             if expr.callee == "say":
                 if len(args) != 1:
-                    raise SolaRuntimeError(
+                    raise SimoRuntimeError(
                         f"Function 'say' expects 1 argument, got {len(args)}",
                         self._filename,
                         expr.line,
@@ -236,7 +236,7 @@ class Interpreter:
             )
             return func(*args)
 
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Unknown expression type: {type(expr).__name__}",
             self._filename,
             expr.line,
@@ -272,7 +272,7 @@ class Interpreter:
             left_num = self._as_number(left, line, column, "left operand of '/'")
             right_num = self._as_number(right, line, column, "right operand of '/'")
             if right_num == 0:
-                raise SolaRuntimeError("Division by zero", self._filename, line, column)
+                raise SimoRuntimeError("Division by zero", self._filename, line, column)
             return left_num / right_num
 
         if operator in ("==", "!="):
@@ -287,7 +287,7 @@ class Interpreter:
         if operator == ">=":
             return self._compare_numbers(left, right, line, column) >= 0
 
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Unknown binary operator '{operator}'",
             self._filename,
             line,
@@ -308,7 +308,7 @@ class Interpreter:
     ) -> None:
         if isinstance(value, (str, int, float, bool)):
             return
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Expected string, number, or boolean for {context}, got {self._type_name(value)}",
             self._filename,
             line,
@@ -329,7 +329,7 @@ class Interpreter:
 
     def _as_number(self, value: Any, line: int, column: int, context: str) -> int | float:
         if isinstance(value, bool):
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Expected number for {context}, got boolean",
                 self._filename,
                 line,
@@ -337,7 +337,7 @@ class Interpreter:
             )
         if isinstance(value, (int, float)):
             return value
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Expected number for {context}, got {self._type_name(value)}",
             self._filename,
             line,
@@ -352,7 +352,7 @@ class Interpreter:
         context: str,
     ) -> int:
         if isinstance(value, bool):
-            raise SolaRuntimeError(
+            raise SimoRuntimeError(
                 f"Expected non-negative integer for {context}, got boolean",
                 self._filename,
                 line,
@@ -362,7 +362,7 @@ class Interpreter:
             return value
         if isinstance(value, float) and value.is_integer() and value >= 0:
             return int(value)
-        raise SolaRuntimeError(
+        raise SimoRuntimeError(
             f"Expected non-negative integer for {context}, got {self._type_name(value)}",
             self._filename,
             line,

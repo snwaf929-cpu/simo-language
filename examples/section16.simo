@@ -3,7 +3,7 @@ fix max_score = 100
 set score = 0
 
 action welcome_sequence()
-    say("Loading Sola Engine...")
+    say("Loading Simo Engine...")
     say("Hello, " + player_name)
 end
 

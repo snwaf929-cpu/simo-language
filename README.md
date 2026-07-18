@@ -1,5 +1,22 @@
 # Simo Programming Language — v0 Documentation
 
+## Current Interpreter
+
+The current Milestone 1 interpreter requires **Python 3.11+**.
+
+```bash
+pip install -e .
+simo run examples/section16.simo
+```
+
+You can also run it without the installed command:
+
+```bash
+python -m simo examples/section16.simo
+```
+
+---
+
 ## 1. Core Philosophy
 
 - **Name:** Simo — short for "Simple," reflecting the language's core goal: plain English instead of coding jargon.

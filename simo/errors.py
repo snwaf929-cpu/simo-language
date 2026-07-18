@@ -1,4 +1,4 @@
-"""Sola language error types."""
+"""Simo language error types."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from dataclasses import dataclass
 
 
 @dataclass
-class SolaError(Exception):
-    """Base error for all Sola failures."""
+class SimoError(Exception):
+    """Base error for all Simo failures."""
 
     category: str
     message: str
@@ -22,7 +22,7 @@ class SolaError(Exception):
         return f"[{self.category}] {location}: {self.message}"
 
 
-class LexError(SolaError):
+class LexError(SimoError):
     """Lexical analysis error."""
 
     def __init__(
@@ -35,7 +35,7 @@ class LexError(SolaError):
         super().__init__("LexError", message, filename, line, column)
 
 
-class ParseError(SolaError):
+class ParseError(SimoError):
     """Syntax analysis error."""
 
     def __init__(
@@ -48,7 +48,7 @@ class ParseError(SolaError):
         super().__init__("ParseError", message, filename, line, column)
 
 
-class RuntimeError(SolaError):
+class RuntimeError(SimoError):
     """Runtime execution error."""
 
     def __init__(

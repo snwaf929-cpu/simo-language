@@ -1,10 +1,10 @@
-"""Recursive-descent parser for Sola."""
+"""Recursive-descent parser for Simo."""
 
 from __future__ import annotations
 
-from sola import ast_nodes as ast
-from sola.errors import ParseError
-from sola.tokens import Token, TokenType
+from simo import ast_nodes as ast
+from simo.errors import ParseError
+from simo.tokens import Token, TokenType
 
 
 class Parser:

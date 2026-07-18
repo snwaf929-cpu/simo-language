@@ -1,9 +1,9 @@
-"""Lexical analyzer for Sola source code."""
+"""Lexical analyzer for Simo source code."""
 
 from __future__ import annotations
 
-from sola.errors import LexError
-from sola.tokens import KEYWORDS, Token, TokenType
+from simo.errors import LexError
+from simo.tokens import KEYWORDS, Token, TokenType
 
 
 class Lexer:

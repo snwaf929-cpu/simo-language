@@ -1,4 +1,4 @@
-"""Token definitions for the Sola lexer."""
+"""Token definitions for the Simo lexer."""
 
 from __future__ import annotations
 
