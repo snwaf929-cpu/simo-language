@@ -1,0 +1,23 @@
+set player_name = "Alex"
+fix max_score = 100
+set score = 0
+
+action welcome_sequence()
+    say("Loading Sola Engine...")
+    say("Hello, " + player_name)
+end
+
+action add_points(amount)
+    score = score + amount
+    if score >= max_score
+        say("Max score reached!")
+    end
+end
+
+welcome_sequence()
+
+loop 3 times
+    add_points(40)
+end
+
+say("Final score: " + score)
