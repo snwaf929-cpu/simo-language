@@ -29,7 +29,6 @@ function completionItem(data) {
   item.documentation = new vscode.MarkdownString(data.documentation || '');
   if (data.insertText) {
     item.insertText = new vscode.SnippetString(data.insertText);
-    item.insertTextRules = vscode.CompletionItemInsertTextRule.InsertAsSnippet;
   }
   item.sortText = data.kind === 'property' ? `0-${data.label}` : `1-${data.label}`;
   return item;
