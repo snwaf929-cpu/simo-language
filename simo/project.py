@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import re
+import shutil
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from simo.branding import bundled_icon
 from simo.errors import ProjectError
 
 
@@ -61,12 +63,20 @@ def resolve_entry(file: Path | None = None) -> Path:
     return config.entry.resolve()
 
 
+def _install_default_project_icons(assets: Path) -> None:
+    """Copy replaceable Simo logo files into a newly created desktop project."""
+
+    for extension in ("ico", "png", "icns"):
+        shutil.copy2(bundled_icon(extension), assets / f"icon.{extension}")
+
+
 def create_project(destination: Path, template: str = "console") -> ProjectConfig:
     destination = destination.resolve()
     if destination.exists() and any(destination.iterdir()):
         raise ProjectError(f"Directory is not empty: {destination}", str(destination))
     destination.mkdir(parents=True, exist_ok=True)
-    (destination / "assets").mkdir(exist_ok=True)
+    assets = destination / "assets"
+    assets.mkdir(exist_ok=True)
 
     if template == "app":
         template = "pwa"
@@ -85,8 +95,16 @@ def create_project(destination: Path, template: str = "console") -> ProjectConfi
     )
 
     if template == "console":
-        source = '''set name = "World"\n\naction greet(person)\n    say("Hello, " + person + "!")\nend\n\ngreet(name)\n'''
+        source = '''set name = "World"
+
+action greet(person)
+    say("Hello, " + person + "!")
+end
+
+greet(name)
+'''
     elif template == "desktop":
+        _install_default_project_icons(assets)
         app_title = destination.name.replace("-", " ").replace("_", " ").title()
         source = f'''page "{app_title}" size 460x520 {{
     show heading "{app_title}" named title {{
@@ -134,7 +152,12 @@ def create_project(destination: Path, template: str = "console") -> ProjectConfi
     if template == "console":
         run_command = "simo run"
     elif template == "desktop":
-        run_command = "simo run  # opens the native app\nsimo build --target desktop  # creates an executable"
+        run_command = (
+            "simo run  # opens the native app\n"
+            "simo build --target desktop  # creates an executable\n\n"
+            "Replace assets/icon.ico, assets/icon.png, or assets/icon.icns "
+            "to customize the app icon."
+        )
     else:
         run_command = "simo dev\nsimo build"
     (destination / "README.md").write_text(
