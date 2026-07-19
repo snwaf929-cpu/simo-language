@@ -16,7 +16,7 @@ class BrandingTests(unittest.TestCase):
             self.assertTrue(icon.exists())
             self.assertGreater(icon.stat().st_size, 0)
 
-    def test_editor_support_installs_language_icons(self) -> None:
+    def test_editor_support_installs_language_intelligence_and_icons(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary)
             (home / ".vscode").mkdir()
@@ -30,8 +30,12 @@ class BrandingTests(unittest.TestCase):
             package = json.loads((extension / "package.json").read_text(encoding="utf-8"))
             language = package["contributes"]["languages"][0]
             self.assertEqual(language["extensions"], [".simo"])
+            self.assertEqual(package["main"], "./extension.js")
+            self.assertIn("onLanguage:simo", package["activationEvents"])
             self.assertTrue((extension / language["icon"]["light"]).exists())
             self.assertTrue((extension / language["icon"]["dark"]).exists())
+            self.assertTrue((extension / "extension.js").exists())
+            self.assertTrue((extension / "language.js").exists())
 
 
 if __name__ == "__main__":
