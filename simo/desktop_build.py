@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 from simo import ast_nodes as ast
+from simo.branding import bundled_icon
 from simo.errors import BuildError
 from simo.project import ProjectConfig, load_project
 from simo.source import load_program
@@ -89,15 +90,18 @@ def _stage_project(project: ProjectConfig, source_path: Path, destination: Path)
     return entry_relative
 
 
-def _platform_icon(project: ProjectConfig) -> Path | None:
+def _platform_icon(project: ProjectConfig) -> Path:
+    """Return a project icon when supplied, otherwise Simo's bundled logo."""
+
     assets = project.root / "assets"
     if sys.platform == "win32":
         candidate = assets / "icon.ico"
-    elif sys.platform == "darwin":
+        return candidate if candidate.exists() else bundled_icon("ico")
+    if sys.platform == "darwin":
         candidate = assets / "icon.icns"
-    else:
-        return None
-    return candidate if candidate.exists() else None
+        return candidate if candidate.exists() else bundled_icon("icns")
+    candidate = assets / "icon.png"
+    return candidate if candidate.exists() else bundled_icon("png")
 
 
 def build_desktop(
@@ -162,6 +166,8 @@ def build_desktop(
             str(temporary_root / "spec"),
             "--collect-submodules",
             "simo",
+            "--collect-data",
+            "simo",
             "--hidden-import",
             "tkinter",
             "--hidden-import",
@@ -172,11 +178,10 @@ def build_desktop(
             "tkinter.simpledialog",
             "--add-data",
             f"{staged_app}{os.pathsep}app",
+            "--icon",
+            str(_platform_icon(project)),
+            str(launcher),
         ]
-        icon = _platform_icon(project)
-        if icon is not None:
-            command.extend(["--icon", str(icon)])
-        command.append(str(launcher))
 
         try:
             subprocess.run(command, check=True)
