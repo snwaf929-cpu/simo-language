@@ -70,13 +70,12 @@ class WebCompilerTests(unittest.TestCase):
             self.assertTrue((output / name).exists(), name)
         self.assertIn("standalone", (output / "manifest.webmanifest").read_text())
 
-    def test_desktop_build_writes_tauri_scaffold(self) -> None:
+    def test_pwa_name_replaces_ambiguous_app_target(self) -> None:
         temporary, root, main = self._project()
         self.addCleanup(temporary.cleanup)
-        output = build(main, root / "dist", "desktop")
-        self.assertTrue((output / "src-tauri" / "tauri.conf.json").exists())
-        self.assertTrue((output / "src-tauri" / "src" / "main.rs").exists())
-        self.assertTrue((output / "DESKTOP.md").exists())
+        output = build(main, root / "dist", "pwa")
+        self.assertTrue((output / "manifest.webmanifest").exists())
+        self.assertFalse((output / "src-tauri").exists())
 
     def test_assets_are_copied(self) -> None:
         temporary, root, main = self._project(

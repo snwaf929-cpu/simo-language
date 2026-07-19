@@ -1,0 +1,29 @@
+page "Simo Calculator" size 460x520 {
+    set result = 0
+
+    show heading "Simo Calculator" named title {
+        size big
+        align center
+    }
+
+    show input box named first_number placeholder "First number"
+    show input box named second_number placeholder "Second number"
+    show text "Result: 0" named result_text
+
+    show button "Add" named add_button {
+        background #17191c
+        color white
+
+        when clicked:
+            result = number(first_number.value) + number(second_number.value)
+            change text of result_text to "Result: " + result
+        end
+    }
+
+    show button "Copy result" named copy_button {
+        when clicked:
+            clipboard_set(result_text.text)
+            desktop_notification("Copied", result_text.text)
+        end
+    }
+}

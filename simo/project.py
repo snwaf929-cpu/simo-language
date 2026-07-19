@@ -42,6 +42,8 @@ def load_project(start: Path | None = None) -> ProjectConfig:
     name = str(project.get("name", root.name))
     entry = root / str(project.get("entry", "main.simo"))
     target = str(project.get("target", "console"))
+    if target == "app":
+        target = "pwa"
     output = root / str(project.get("output", "dist"))
     return ProjectConfig(root, name, entry, target, output)
 
@@ -66,20 +68,77 @@ def create_project(destination: Path, template: str = "console") -> ProjectConfi
     destination.mkdir(parents=True, exist_ok=True)
     (destination / "assets").mkdir(exist_ok=True)
 
+    if template == "app":
+        template = "pwa"
+    if template not in {"console", "web", "pwa", "desktop"}:
+        raise ProjectError(f"Unknown project template '{template}'", str(destination))
+
     safe_name = re.sub(r"[^A-Za-z0-9_-]+", "-", destination.name).strip("-") or "simo-project"
-    target = "console" if template == "console" else template
-    config = f'''[project]\nname = "{safe_name}"\nentry = "main.simo"\ntarget = "{target}"\noutput = "dist"\n'''
+    config = (
+        f'[project]\nname = "{safe_name}"\nentry = "main.simo"\n'
+        f'target = "{template}"\noutput = "dist"\n'
+    )
     (destination / "simo.toml").write_text(config, encoding="utf-8")
-    (destination / ".gitignore").write_text("dist/\n.simo-dev/\n__pycache__/\n", encoding="utf-8")
+    (destination / ".gitignore").write_text(
+        "dist/\n.simo-dev/\n__pycache__/\n.simo-storage.json\n",
+        encoding="utf-8",
+    )
 
     if template == "console":
         source = '''set name = "World"\n\naction greet(person)\n    say("Hello, " + person + "!")\nend\n\ngreet(name)\n'''
+    elif template == "desktop":
+        app_title = destination.name.replace("-", " ").replace("_", " ").title()
+        source = f'''page "{app_title}" size 460x520 {{
+    show heading "{app_title}" named title {{
+        size big
+        align center
+    }}
+
+    show input box named first_number placeholder "First number"
+    show input box named second_number placeholder "Second number"
+    show text "Result: 0" named result_text
+
+    show button "Add" named add_button {{
+        background #17191c
+        color white
+        when clicked:
+            set result = number(first_number.value) + number(second_number.value)
+            change text of result_text to "Result: " + result
+        end
+    }}
+}}
+'''
     else:
         app_title = destination.name.replace("-", " ").replace("_", " ").title()
-        source = f'''page "{app_title}" size 720x520 {{\n    set count = 0\n\n    show heading "{app_title}" named title {{\n        size big\n        align center\n    }}\n\n    show text "Count: " + count named counter_text\n\n    show button "Add one" named add_button {{\n        rounded\n        when clicked:\n            count = count + 1\n            change text of counter_text to "Count: " + count\n        end\n    }}\n}}\n'''
+        source = f'''page "{app_title}" size 720x520 {{
+    set count = 0
+
+    show heading "{app_title}" named title {{
+        size big
+        align center
+    }}
+
+    show text "Count: " + count named counter_text
+
+    show button "Add one" named add_button {{
+        rounded
+        when clicked:
+            count = count + 1
+            change text of counter_text to "Count: " + count
+        end
+    }}
+}}
+'''
     (destination / "main.simo").write_text(source, encoding="utf-8")
+
+    if template == "console":
+        run_command = "simo run"
+    elif template == "desktop":
+        run_command = "simo run  # opens the native app\nsimo build --target desktop  # creates an executable"
+    else:
+        run_command = "simo dev\nsimo build"
     (destination / "README.md").write_text(
-        f"# {destination.name}\n\nRun with `simo {'run' if template == 'console' else 'dev'} main.simo`.\n",
+        f"# {destination.name}\n\nEdit `main.simo`, then run:\n\n```bash\n{run_command}\n```\n",
         encoding="utf-8",
     )
     return load_project(destination)

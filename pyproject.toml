@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "simo-language"
-version = "0.5.0"
-description = "A readable programming language for console programs, websites, installable web apps, and desktop scaffolds"
+version = "0.6.0"
+description = "A readable programming language for console programs, websites, installable PWAs, and native desktop apps"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 authors = [{ name = "Simo Language contributors" }]
-keywords = ["programming-language", "compiler", "interpreter", "web", "pwa"]
+keywords = ["programming-language", "compiler", "interpreter", "web", "pwa", "desktop"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -22,6 +22,9 @@ classifiers = [
   "Topic :: Software Development :: Compilers",
   "Topic :: Software Development :: Interpreters",
 ]
+
+[project.optional-dependencies]
+desktop = ["pyinstaller>=6,<7"]
 
 [project.scripts]
 simo = "simo.cli:main"

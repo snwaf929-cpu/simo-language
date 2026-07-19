@@ -1,8 +1,8 @@
 # Simo Programming Language
 
-Simo is a readable programming language that can run console programs and compile page programs into websites, installable Progressive Web Apps, and desktop application scaffolds.
+Simo is a readable programming language for console programs, websites, installable Progressive Web Apps, and native desktop applications. Application authors edit `.simo` files; generated browser files and native packaging files are build artifacts, not source code.
 
-> Current release: **0.5.0 alpha**. The core language and web/app toolchain are usable. Native mobile packaging and a dedicated game engine are not part of this release.
+> Current release: **0.6.0 alpha**. Native desktop run/build is now available. Mobile packaging, the game target, the package registry, and the full language server remain under development.
 
 ## Install
 
@@ -12,7 +12,7 @@ Simo requires Python 3.11 or newer.
 python -m pip install "git+https://github.com/snwaf929-cpu/simo-language.git"
 ```
 
-On Windows, `py` can be used instead of `python`:
+On Windows:
 
 ```powershell
 py -m pip install "git+https://github.com/snwaf929-cpu/simo-language.git"
@@ -25,9 +25,62 @@ simo --version
 simo doctor
 ```
 
-## Create a project
+## Native desktop: `.simo` only
 
-Console project:
+Create a calculator project:
+
+```bash
+simo new my-calculator --template desktop
+cd my-calculator
+simo run
+```
+
+`Simo run` reads `simo.toml`, sees the `desktop` target, and opens `main.simo` in a real native window. No Rust, Tauri, Electron project, HTML editing, or manual wrapper is required.
+
+Build an executable for the current operating system:
+
+```bash
+simo build --target desktop
+```
+
+The first desktop build automatically installs Simo's PyInstaller-based packager when it is not already available. The resulting application includes Python and the Simo runtime, so the person running the finished executable does not need to install Simo or Python.
+
+Desktop builds are host-specific:
+
+- Windows builds a Windows `.exe`.
+- macOS builds a macOS application/binary.
+- Linux builds a Linux executable.
+
+Build each platform on that platform or in a matching CI runner.
+
+### Desktop example
+
+```simo
+page "Calculator" size 460x520 {
+    show heading "Calculator" named title {
+        size big
+        align center
+    }
+
+    show input box named first_number placeholder "First number"
+    show input box named second_number placeholder "Second number"
+    show text "Result: 0" named result_text
+
+    show button "Add" named add_button {
+        background #17191c
+        color white
+
+        when clicked:
+            set result = number(first_number.value) + number(second_number.value)
+            change text of result_text to "Result: " + result
+        end
+    }
+}
+```
+
+## Other project types
+
+Console:
 
 ```bash
 simo new hello-simo --template console
@@ -35,144 +88,101 @@ cd hello-simo
 simo run
 ```
 
-Website project:
+Website:
 
 ```bash
 simo new my-site --template web
 cd my-site
 simo dev
+simo build
 ```
 
-Installable app project:
+Installable Progressive Web App:
 
 ```bash
-simo new my-app --template app
-cd my-app
-simo dev --target app
-simo build --target app
+simo new my-pwa --template pwa
+cd my-pwa
+simo dev
+simo build
 ```
 
-## Console example
+`--target app` remains as a compatibility alias for `--target pwa`, but new projects and documentation use the accurate `pwa` name.
 
-```simo
-set player = { name: "Alex", score: 0 }
-set rewards = [10, 20, 30]
+## Targets
 
-action add_points(amount)
-    player.score = player.score + amount
-end
-
-loop for reward in rewards
-    add_points(reward)
-end
-
-say(player.name + " scored " + player.score)
-```
-
-Run it:
-
-```bash
-simo run main.simo
-```
-
-## Website example
-
-```simo
-page "Counter App" size 600x420 {
-    set count = 0
-
-    show heading "Counter" named title {
-        size big
-        align center
-    }
-
-    show text "Count: " + count named counter_text
-
-    show button "Add one" named add_button {
-        background #17191c
-        color white
-        rounded
-
-        when clicked:
-            count = count + 1
-            change text of counter_text to "Count: " + count
-            show notification "Point added"
-        end
-    }
-}
-```
-
-Develop locally:
-
-```bash
-simo dev main.simo
-```
-
-Build static files:
-
-```bash
-simo build main.simo --target web
-```
-
-The generated `dist/` directory contains `index.html`, `styles.css`, `app.js`, and copied assets. It can be hosted on any static host.
-
-## Build targets
-
-| Target | Command | Output |
+| Target | Main workflow | Output |
 |---|---|---|
-| Console | `simo run main.simo` | Runs through the Simo interpreter |
-| Web | `simo build --target web` | Static HTML, CSS, and JavaScript |
-| App | `simo build --target app` | Installable PWA with manifest, icon, and service worker |
-| Desktop | `simo build --target desktop` | Web bundle plus a Tauri 2 desktop scaffold |
+| Console | `simo run` | Runs through the Simo interpreter |
+| Web | `simo dev`, `simo build` | Static HTML, CSS, JavaScript, and assets |
+| PWA | `simo dev`, `simo build` | Installable browser app with manifest and service worker |
+| Desktop | `simo run`, `simo build` | Native Tk window or packaged native executable |
 
-The desktop target generates the source scaffold. Producing `.exe`, `.msi`, `.dmg`, or Linux bundles requires Rust and the Tauri CLI on the build machine.
+For web and PWA projects, `dist/index.html`, `styles.css`, and `app.js` are compiler output. Do not edit them. Change `main.simo` and rebuild.
+
+## Native desktop APIs
+
+Desktop page programs can use:
+
+```simo
+set selected = open_file_dialog()
+set destination = save_file_dialog()
+set folder = select_folder()
+
+desktop_notification("Saved", "Your file was saved")
+clipboard_set("Copied from Simo")
+set copied = clipboard_get()
+open_url("https://example.com")
+set data_directory = app_data_path()
+quit_app()
+```
+
+`save(key, value)` and `load(key, fallback)` use a persistent per-user application data directory in desktop builds. `ask(prompt)` opens a native prompt dialog.
 
 ## Commands
 
 ```text
-simo run [file]                 Run a console program
-simo check [file]               Parse and validate source and imports
-simo build [file] --target ...  Build web, app, or desktop output
-simo dev [file]                 Start the development server
-simo new NAME --template ...    Create a project
-simo fmt FILES...               Format source files
-simo test [path]                Run test_*.simo files
-simo doctor                     Show environment and project information
+simo run [file] [--target ...]       Run console/web/PWA/desktop projects
+simo check [file]                    Parse and validate source and imports
+simo build [file] --target ...       Build web, PWA, or native desktop output
+simo dev [file] [--target ...]       Run a development web server or native window
+simo new NAME --template ...         Create console/web/PWA/desktop projects
+simo fmt FILES...                    Format source files
+simo test [path]                     Run test_*.simo files
+simo doctor                          Check native and packaging support
 ```
 
-A `simo.toml` project file lets commands omit the source path:
+A `simo.toml` project lets commands omit the file and target:
 
 ```toml
 [project]
-name = "counter-app"
+name = "calculator"
 entry = "main.simo"
-target = "web"
+target = "desktop"
 output = "dist"
 ```
 
 ## Implemented language features
 
-- Mutable `set` variables and immutable `fix` constants
+- Mutable variables and immutable constants
 - Numbers, text, booleans, `null`, lists, and objects
-- Member access and list/object indexing
-- Actions, return values, lexical closures, and imports
-- `if`, `else if`, `else`
-- Fixed, while, and collection loops
-- `break` and `continue`
-- `attempt` / `if it fails`
-- Console input/output and file/storage helpers
+- Member access and indexing
+- Actions, return values, closures, and imports
+- Conditions and fixed/while/collection loops
+- `break`, `continue`, and `attempt` / `if it fails`
+- Console, file, and persistent-storage helpers
 - Page, heading, text, button, image, and input elements
 - Click and input-change events
-- DOM changes and notifications
-- Web, PWA, and desktop-scaffold compilation
-- Formatter, project generator, checker, test runner, and development server
+- Element changes and notifications
+- Web, PWA, native desktop runtime, and executable packaging
+- Formatter, checker, test runner, project generator, and development server
 - VS Code syntax definition and snippets under `editors/vscode`
 
 ## Documentation
 
 - [Language guide](docs/LANGUAGE.md)
-- [Web and app guide](docs/WEB_AND_APPS.md)
+- [Web, PWA, and desktop guide](docs/WEB_AND_APPS.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Platform implementation plan](docs/PLATFORM_PLAN.md)
 - [Roadmap](docs/ROADMAP.md)
 
 ## Development
@@ -182,5 +192,4 @@ git clone https://github.com/snwaf929-cpu/simo-language.git
 cd simo-language
 python -m pip install -e .
 python -m unittest discover -s tests -v
-simo build examples/web/main.simo --target web --output dist-example
 ```

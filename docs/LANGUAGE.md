@@ -125,11 +125,28 @@ The catch block receives an immutable `error` text value.
 | `contains(collection, value)` | Membership test |
 | `keys(object)` / `values(object)` | Object contents |
 | `save(key, value)` / `load(key, fallback)` | Persistent storage |
-| `read_file(path)` / `write_file(path, text)` | Console file access |
+| `read_file(path)` / `write_file(path, text)` | File access |
 | `assert(condition, message)` | Fail a Simo test or program |
 | `random()`, `round()`, `floor()`, `ceil()`, `pi` | Basic math helpers |
 
-`save` and `load` use `.simo-storage.json` for console programs and browser local storage for web/app builds.
+`save` and `load` use `.simo-storage.json` for console programs, browser local storage for web/PWA builds, and a per-user application data directory for native desktop builds.
+
+## Desktop-only built-ins
+
+Inside a desktop page, Simo also provides:
+
+| Built-in | Purpose |
+|---|---|
+| `open_file_dialog()` | Open a native file picker |
+| `save_file_dialog()` | Open a native save picker |
+| `select_folder()` | Open a native directory picker |
+| `desktop_notification(title, message)` | Display a native message |
+| `clipboard_get()` / `clipboard_set(value)` | Read/write the system clipboard |
+| `open_url(url)` | Open the system browser |
+| `app_data_path()` | Get the persistent application data directory |
+| `quit_app()` | Close the current desktop app |
+
+For desktop pages, `ask(prompt)` opens a native input dialog instead of reading a terminal.
 
 ## Source tests
 
