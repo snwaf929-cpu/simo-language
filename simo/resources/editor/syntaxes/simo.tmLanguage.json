@@ -6,9 +6,12 @@
     { "include": "#comments" },
     { "include": "#strings" },
     { "include": "#numbers" },
+    { "include": "#declarations" },
+    { "include": "#builtins" },
+    { "include": "#properties" },
     { "include": "#keywords" },
     { "include": "#constants" },
-    { "include": "#actions" },
+    { "include": "#calls" },
     { "include": "#operators" }
   ],
   "repository": {
@@ -22,24 +25,68 @@
       "name": "string.quoted.double.simo",
       "begin": "\"",
       "end": "\"",
-      "patterns": [{ "name": "constant.character.escape.simo", "match": "\\\\[ntr\"\\\\]" }]
+      "patterns": [
+        { "name": "constant.character.escape.simo", "match": "\\\\[ntr\"\\\\]" }
+      ]
     },
     "numbers": {
       "patterns": [
         { "name": "constant.numeric.dimension.simo", "match": "\\b\\d+x\\d+\\b" },
-        { "name": "constant.numeric.simo", "match": "\\b\\d+(?:\\.\\d+)?\\b" }
+        { "name": "constant.numeric.simo", "match": "\\b\\d+(?:\\.\\d+)?\\b" },
+        { "name": "constant.other.color.rgb-value.simo", "match": "#[0-9A-Fa-f]{3,8}\\b" }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(action)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.function.simo" },
+            "2": { "name": "entity.name.function.simo" }
+          }
+        },
+        {
+          "match": "\\b(set|fix)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.variable.simo" },
+            "2": { "name": "variable.other.definition.simo" }
+          }
+        },
+        {
+          "match": "\\b(named)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.other.simo" },
+            "2": { "name": "entity.name.tag.simo" }
+          }
+        }
+      ]
+    },
+    "builtins": {
+      "name": "support.function.simo",
+      "match": "\\b(say|ask|number|text|boolean|length|range|append|remove|contains|keys|values|save|load|read_file|write_file|assert|random|round|floor|ceil|open_file_dialog|save_file_dialog|select_folder|desktop_notification|clipboard_get|clipboard_set|open_url|app_data_path|quit_app)\\b(?=\\s*\\()"
+    },
+    "properties": {
+      "patterns": [
+        {
+          "name": "variable.other.property.simo",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b(?=\\s*:)"
+        },
+        {
+          "name": "variable.other.member.simo",
+          "match": "(?<=\\.)[A-Za-z_][A-Za-z0-9_]*"
+        }
       ]
     },
     "keywords": {
       "name": "keyword.control.simo",
-      "match": "\\b(set|fix|action|return|end|if|else|loop|times|while|for|in|break|continue|import|attempt|it|fails|and|or|not|is|page|show|heading|text|button|image|input|box|notification|named|placeholder|size|when|clicked|changes|change|of|to)\\b"
+      "match": "\\b(return|end|if|else|loop|times|while|for|in|break|continue|import|attempt|it|fails|and|or|not|is|page|show|heading|text|button|image|input|box|notification|placeholder|size|when|clicked|changes|change|of|to|background|color|align|rounded|visible|enabled)\\b"
     },
     "constants": {
       "name": "constant.language.simo",
-      "match": "\\b(true|false|yes|no|null)\\b"
+      "match": "\\b(true|false|yes|no|null|pi)\\b"
     },
-    "actions": {
-      "name": "entity.name.function.simo",
+    "calls": {
+      "name": "entity.name.function.call.simo",
       "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()"
     },
     "operators": {
