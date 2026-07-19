@@ -2,7 +2,7 @@
   "name": "simo-language-support",
   "displayName": "Simo Language Support",
   "description": "Syntax highlighting, brackets, comments, and snippets for Simo",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "publisher": "simo-language",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Programming Languages", "Snippets"],

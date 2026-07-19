@@ -1,5 +1,5 @@
 [project]
-name = "simo-notes"
+name = "simo-calculator"
 entry = "main.simo"
-target = "app"
+target = "desktop"
 output = "dist"

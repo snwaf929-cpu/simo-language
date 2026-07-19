@@ -1,16 +1,14 @@
-# Web and App Development
+# Web, PWA, and Desktop Development
 
-## Page declaration
-
-A browser project requires exactly one page:
+A page program uses the same `.simo` source for browser and native desktop targets:
 
 ```simo
 page "My App" size 800x600 {
-    // state, actions, and UI elements
+    // state, actions, and native/browser UI elements
 }
 ```
 
-The size controls the preferred application surface. The generated page remains responsive on smaller screens.
+The `.simo` file is the source of truth. Browser files, manifests, service workers, packaging scripts, and executables are generated output.
 
 ## Elements
 
@@ -20,17 +18,14 @@ show text "Status: Ready" named status
 show image "assets/logo.png" named logo {
     alt "Simo logo"
     size 200x100
-    rounded
 }
 show input box named username placeholder "Enter your name"
 show button "Continue" named continue_button
 ```
 
-Names become stable element IDs and are required when another statement references an element.
+Names are required when another expression or statement references an element.
 
-## Styling attributes
-
-Attributes can be inline or in an element block:
+## Styling
 
 ```simo
 show button "Save" named save_button {
@@ -42,77 +37,119 @@ show button "Save" named save_button {
 }
 ```
 
-Common attributes include `size`, `color`, `background`, `width`, `height`, `padding`, `margin`, `align`, `position`, `rounded`, `visible`, and `alt`.
+Web/PWA targets support CSS-oriented attributes. The native desktop runtime maps common attributes such as `size`, `color`, `background`, `width`, `height`, `align`, `visible`, and `enabled` to native widgets. Browser-specific visual details such as arbitrary CSS and pill-shaped borders can differ on desktop.
 
-## Events
+## Events and element state
 
 ```simo
-show button "Add" named add_button {
+show input box named username placeholder "Name"
+show text "Hello" named greeting
+
+show button "Greet" named greet_button {
     when clicked:
-        count = count + 1
-        change text of counter to "Count: " + count
+        change text of greeting to "Hello, " + username.value
     end
 }
 ```
 
-Input events use `when changes:` inside an input block. Reactive text can also watch an input directly:
+Input events use `when changes:`. Reactive text can watch an input:
 
 ```simo
-show input box named username placeholder "Name"
-show text "Hello, " + username.value named greeting when username changes
+show text "Hello, " + username.value named live_greeting when username changes
 ```
 
-## UI commands
+## Web
+
+```bash
+simo new my-site --template web
+cd my-site
+simo dev
+simo build
+```
+
+The generated `dist/` folder can be deployed to a static host. Do not edit `dist`; edit `.simo` source and rebuild.
+
+## Progressive Web App
+
+```bash
+simo new my-pwa --template pwa
+cd my-pwa
+simo dev
+simo build
+```
+
+The PWA target adds a web manifest, icon, offline service worker, and standalone display mode. It is still browser technology, so Simo calls it `pwa` rather than the ambiguous `app` name. `--target app` is retained only as a compatibility alias.
+
+## Native desktop run
+
+```bash
+simo new my-calculator --template desktop
+cd my-calculator
+simo run
+```
+
+The page opens in a native Tk window. No generated HTML or Tauri project is used for desktop execution.
+
+Development can also be explicit:
+
+```bash
+simo dev --target desktop
+simo run --target desktop
+```
+
+## Native executable build
+
+```bash
+simo build --target desktop
+```
+
+Simo validates the project, stages only project source/assets, automatically installs its packager when needed, and creates a single-file native application for the current operating system. The generated executable embeds the Simo and Python runtimes.
+
+Use `--no-install-tools` in controlled CI environments where automatic installation is not allowed:
+
+```bash
+simo build --target desktop --no-install-tools
+```
+
+In that mode, install `pyinstaller>=6,<7` ahead of time.
+
+## Desktop APIs
 
 ```simo
-change text of status to "Saved"
-change color of status to "green"
-change visible of panel to false
-show notification "Saved successfully"
+set source = open_file_dialog()
+set destination = save_file_dialog()
+set directory = select_folder()
+
+desktop_notification("Export complete", destination)
+clipboard_set(destination)
+open_url("https://example.com")
+
+save("last-file", destination)
+set previous = load("last-file", "")
+set data_dir = app_data_path()
 ```
 
-## Assets
+Available desktop-only helpers:
 
-Put static files in an `assets/` directory next to the entry file. Builds copy that directory to the output unchanged.
+| Helper | Purpose |
+|---|---|
+| `open_file_dialog()` | Native open-file dialog |
+| `save_file_dialog()` | Native save-file dialog |
+| `select_folder()` | Native directory picker |
+| `desktop_notification(title, message)` | Native message dialog |
+| `clipboard_get()` / `clipboard_set(value)` | System clipboard |
+| `open_url(url)` | Open the default browser |
+| `app_data_path()` | Per-user persistent application data directory |
+| `quit_app()` | Close the application |
+
+`ask(prompt)` also becomes a native dialog inside a desktop page.
+
+## Images
+
+Put assets next to the project under `assets/`:
 
 ```simo
-show image "assets/photo.jpg" named photo
+show image "assets/logo.png" named logo
 ```
 
-## Web build
-
-```bash
-simo build main.simo --target web --output dist
-```
-
-Deploy the output to any static host.
-
-## Installable app build
-
-```bash
-simo build main.simo --target app --output dist
-```
-
-This adds a web manifest, service worker, and icon. Host the output over HTTPS; supported browsers can install it as an app.
-
-## Desktop build
-
-```bash
-simo build main.simo --target desktop --output dist
-```
-
-This adds a Tauri 2 project under `dist/src-tauri`. Install Rust and the Tauri CLI, enter the output directory, and run:
-
-```bash
-cargo tauri build
-```
-
-The resulting native package depends on the operating system used for the build.
-
-## Development server
-
-```bash
-simo dev main.simo --port 8000
-```
-
-The browser opens automatically. Source and asset changes are rebuilt on the next browser request. Refresh the page to load the new output.
+The browser target supports browser image formats. The native Tk runtime currently supports PNG and GIF directly. More image codecs are planned.

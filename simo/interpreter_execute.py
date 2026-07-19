@@ -117,7 +117,7 @@ class InterpreterExecuteMixin:
         if isinstance(statement, (ast.ShowElement, ast.ChangeElement, ast.ShowNotification)):
             raise self._runtime_error(
                 statement,
-                "UI statements require a page and the web/app compiler.",
+                "UI statements require a page and a web, PWA, or desktop target.",
             )
         raise self._runtime_error(statement, f"Unknown statement {type(statement).__name__}")
 

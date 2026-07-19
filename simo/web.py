@@ -32,7 +32,7 @@ class WebCompiler(WebElementsMixin, WebCodegenMixin, WebOutputsMixin):
         pages = [statement for statement in self.program.statements if isinstance(statement, ast.PageDecl)]
         if not pages:
             raise BuildError(
-                "Web/app builds require one 'page ... { }' declaration",
+                "Web/PWA builds require one 'page ... { }' declaration",
                 str(self.source_path),
             )
         if len(pages) > 1:
@@ -87,11 +87,8 @@ class WebCompiler(WebElementsMixin, WebCodegenMixin, WebOutputsMixin):
         (output_dir / "app.js").write_text(app_js, encoding="utf-8")
         self._copy_assets(output_dir)
 
-        if target == "app":
+        if target in {"pwa", "app"}:
             self._write_pwa(output_dir, title)
-        elif target == "desktop":
-            self._write_pwa(output_dir, title)
-            self._write_desktop_scaffold(output_dir, title)
         return output_dir
 
     def _literal_title(self, expression: ast.Expr | None) -> str:
@@ -100,11 +97,11 @@ class WebCompiler(WebElementsMixin, WebCodegenMixin, WebOutputsMixin):
         raise BuildError("Page title must currently be quoted text", str(self.source_path))
 
     def _html(self, title: str, target: str) -> str:
-        manifest = '<link rel="manifest" href="manifest.webmanifest">' if target in {"app", "desktop"} else ""
+        manifest = '<link rel="manifest" href="manifest.webmanifest">' if target in {"pwa", "app"} else ""
         service_worker = """
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-</script>""" if target in {"app", "desktop"} else ""
+</script>""" if target in {"pwa", "app"} else ""
         return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -139,8 +136,11 @@ if ('serviceWorker' in navigator) window.addEventListener('load', () => navigato
         self.element_counter = 0
 
 
+
 def build(source_path: Path, output_dir: Path, target: str = "web") -> Path:
-    if target not in {"web", "app", "desktop"}:
-        raise BuildError(f"Unknown build target '{target}'", str(source_path))
+    if target == "app":
+        target = "pwa"
+    if target not in {"web", "pwa"}:
+        raise BuildError(f"Unknown browser build target '{target}'", str(source_path))
     program = load_program(source_path)
     return WebCompiler(program, source_path).compile(output_dir, target)

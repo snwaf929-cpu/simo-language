@@ -37,6 +37,14 @@ class CliTests(unittest.TestCase):
             self.assertEqual(result, 0)
             self.assertTrue((destination / "dist" / "index.html").exists())
 
+    def test_new_desktop_project(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary) / "calculator"
+            result = main(["new", str(destination), "--template", "desktop"])
+            self.assertEqual(result, 0)
+            self.assertEqual(load_project(destination).target, "desktop")
+            self.assertIn("page", (destination / "main.simo").read_text())
+
     def test_check_command(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             file = Path(temporary) / "main.simo"

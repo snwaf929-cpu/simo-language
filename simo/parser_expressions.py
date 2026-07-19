@@ -131,10 +131,12 @@ class ParserExpressionMixin:
                 )
                 continue
             if self._match(TokenType.DOT):
-                name = self._consume(TokenType.IDENTIFIER, "Expected property name after '.'")
+                name = self._advance()
+                if not name.lexeme or not (name.lexeme[0].isalpha() or name.lexeme[0] == "_"):
+                    self._error("Expected property name after '.'", name)
                 expr = ast.Get(
                     object=expr,
-                    name=name.lexeme,
+                    name=name.lexeme.lower(),
                     line=name.line,
                     column=name.column,
                 )
