@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from simo.branding import bundled_icon
 from simo.cli import main
 from simo.desktop import DesktopRuntime
 from simo.desktop_build import build_desktop
@@ -78,6 +79,8 @@ class FakeRoot(FakeWidget):
         self.window_geometry = ""
         self.mainloop_called = False
         self.clipboard = ""
+        self.icon_photo = None
+        self.icon_bitmap = None
 
     def title(self, value):
         self.window_title = value
@@ -87,6 +90,12 @@ class FakeRoot(FakeWidget):
 
     def minsize(self, *_args):
         pass
+
+    def iconphoto(self, _default, image):
+        self.icon_photo = image
+
+    def iconbitmap(self, path=None, **options):
+        self.icon_bitmap = path or options.get("default")
 
     def mainloop(self):
         self.mainloop_called = True
@@ -115,8 +124,8 @@ class FakeTk:
     StringVar = FakeVar
 
     @staticmethod
-    def PhotoImage(**_options):
-        return object()
+    def PhotoImage(**options):
+        return {"photo": options}
 
 
 class FakeDialogs:
@@ -175,6 +184,7 @@ class DesktopTests(unittest.TestCase):
         self.assertTrue(native_root.mainloop_called)
         self.assertEqual(native_root.window_title, "Calculator")
         self.assertEqual(native_root.window_geometry, "420x360")
+        self.assertIsNotNone(native_root.icon_photo)
 
         runtime.elements["first"].value = "42"
         runtime.elements["copy_button"].widget.options["command"]()
@@ -187,12 +197,13 @@ class DesktopTests(unittest.TestCase):
             destination = Path(temporary) / "calculator"
             project = create_project(destination, "desktop")
             self.assertEqual(project.target, "desktop")
+            self.assertTrue((destination / "assets" / "icon.ico").exists())
             with patch("simo.cli.run_desktop", return_value=0) as run_native:
                 result = main(["run", str(destination / "main.simo")])
             self.assertEqual(result, 0)
             run_native.assert_called_once_with((destination / "main.simo").resolve())
 
-    def test_desktop_build_invokes_onefile_native_packager(self) -> None:
+    def test_desktop_build_invokes_onefile_native_packager_with_icon(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             destination = Path(temporary) / "calculator"
             project = create_project(destination, "desktop")
@@ -222,8 +233,16 @@ class DesktopTests(unittest.TestCase):
             self.assertIn("--onefile", command)
             self.assertIn("--windowed", command)
             self.assertIn("--add-data", command)
+            self.assertIn("--collect-data", command)
+            self.assertIn("--icon", command)
+            icon = Path(command[command.index("--icon") + 1])
+            self.assertTrue(icon.exists())
             self.assertIn("tkinter", command)
             self.assertNotIn("cargo", " ".join(command).lower())
+
+    def test_bundled_icon_formats_exist(self) -> None:
+        for extension in ("ico", "png", "icns"):
+            self.assertTrue(bundled_icon(extension).exists())
 
 
 if __name__ == "__main__":

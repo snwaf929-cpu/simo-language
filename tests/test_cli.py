@@ -5,6 +5,7 @@ import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 from simo.cli import main
 from simo.formatter import format_source
@@ -44,6 +45,22 @@ class CliTests(unittest.TestCase):
             self.assertEqual(result, 0)
             self.assertEqual(load_project(destination).target, "desktop")
             self.assertIn("page", (destination / "main.simo").read_text())
+            self.assertTrue((destination / "assets" / "icon.ico").exists())
+            self.assertTrue((destination / "assets" / "icon.png").exists())
+            self.assertTrue((destination / "assets" / "icon.icns").exists())
+
+    def test_setup_icons_command(self) -> None:
+        installed = Path("/tmp/simo-editor-extension")
+        output = StringIO()
+        with patch("simo.cli.install_editor_support", return_value=[installed]) as install, patch(
+            "simo.cli.register_windows_file_type", return_value='cursor.exe "%1"'
+        ) as register, patch("simo.cli.sys.platform", "win32"), redirect_stdout(output):
+            result = main(["setup-icons", "--editor", "cursor"])
+        self.assertEqual(result, 0)
+        install.assert_called_once_with("cursor")
+        register.assert_called_once_with()
+        self.assertIn("Installed Simo editor support", output.getvalue())
+        self.assertIn("Registered .simo", output.getvalue())
 
     def test_check_command(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

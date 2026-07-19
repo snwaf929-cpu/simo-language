@@ -6,6 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from simo.branding import bundled_icon, install_editor_support
 from simo.desktop import run_desktop, tkinter_available
 from simo.desktop_build import build_desktop, pyinstaller_available
 from simo.devserver import serve
@@ -16,9 +17,20 @@ from simo.project import create_project, load_project, resolve_entry
 from simo.source import load_program, parse_source
 from simo.testing import run_tests
 from simo.web import build as build_web_target
+from simo.windows_integration import register_windows_file_type
 
 
-COMMANDS = {"run", "check", "build", "dev", "new", "fmt", "test", "doctor"}
+COMMANDS = {
+    "run",
+    "check",
+    "build",
+    "dev",
+    "new",
+    "fmt",
+    "test",
+    "doctor",
+    "setup-icons",
+}
 TARGETS = ["console", "web", "pwa", "app", "desktop"]
 
 
@@ -64,7 +76,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="simo",
         description="Run, check, build, and serve Simo programs.",
     )
-    parser.add_argument("--version", action="version", version="Simo 0.6.0")
+    parser.add_argument("--version", action="version", version="Simo 0.6.1")
     subparsers = parser.add_subparsers(dest="command")
 
     run = subparsers.add_parser("run", help="Run a console, web, PWA, or desktop project")
@@ -113,6 +125,22 @@ def build_parser() -> argparse.ArgumentParser:
     test.add_argument("--step-limit", type=int, default=100_000)
 
     subparsers.add_parser("doctor", help="Show toolchain and project information")
+
+    icons = subparsers.add_parser(
+        "setup-icons",
+        help="Install Simo icons for VS Code/Cursor and Windows Explorer",
+    )
+    icons.add_argument(
+        "--editor",
+        choices=["auto", "vscode", "cursor", "both", "none"],
+        default="auto",
+        help="Editor integration to install (default: detect installed editors)",
+    )
+    icons.add_argument(
+        "--skip-windows",
+        action="store_true",
+        help="Do not register the .simo file type in Windows Explorer",
+    )
     return parser
 
 
@@ -150,6 +178,33 @@ def _run_page_target(
         port=port,
         open_browser=open_browser,
     )
+    return 0
+
+
+def _setup_icons(editor: str, *, skip_windows: bool) -> int:
+    installed = install_editor_support(editor)
+    if installed:
+        for destination in installed:
+            print(f"Installed Simo editor support: {destination}")
+        print("Reload or restart VS Code/Cursor to display the Simo language icon.")
+    elif editor == "none":
+        print("Editor icon installation skipped.")
+    else:
+        print(
+            "No supported editor installation was detected. Re-run with "
+            "--editor vscode, --editor cursor, or --editor both."
+        )
+
+    if sys.platform == "win32" and not skip_windows:
+        command = register_windows_file_type()
+        print("Registered .simo as a Simo Source File in Windows Explorer.")
+        print(f"Default open command: {command}")
+    elif skip_windows:
+        print("Windows Explorer file registration skipped.")
+    else:
+        print("Windows Explorer file registration is only needed on Windows.")
+
+    print(f"Bundled Simo logo: {bundled_icon('png')}")
     return 0
 
 
@@ -251,9 +306,12 @@ def main(argv: list[str] | None = None) -> int:
             _, failed = run_tests(args.path, args.step_limit)
             return 1 if failed else 0
 
+        if args.command == "setup-icons":
+            return _setup_icons(args.editor, skip_windows=args.skip_windows)
+
         if args.command == "doctor":
             project = load_project()
-            print("Simo 0.6.0")
+            print("Simo 0.6.1")
             print(f"Python: {sys.version.split()[0]}")
             print(f"Project root: {project.root}")
             print(f"Entry: {project.entry}")
@@ -264,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
                 "Desktop executable packager: "
                 + ("ready" if pyinstaller_available() else "will install automatically on first build")
             )
+            print(f"Bundled Simo app icon: {bundled_icon('ico')}")
+            print("Editor/file icons: run 'simo setup-icons'")
             return 0
     except SimoError as exc:
         print(str(exc), file=sys.stderr)

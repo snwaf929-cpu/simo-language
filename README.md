@@ -2,7 +2,7 @@
 
 Simo is a readable programming language for console programs, websites, installable Progressive Web Apps, and native desktop applications. Application authors edit `.simo` files; generated browser files and native packaging files are build artifacts, not source code.
 
-> Current release: **0.6.0 alpha**. Native desktop run/build is now available. Mobile packaging, the game target, the package registry, and the full language server remain under development.
+> Current release: **0.6.1 alpha**. Native desktop run/build and official Simo app/source icons are available. Mobile packaging, the game target, the package registry, and the full language server remain under development.
 
 ## Install
 
@@ -18,11 +18,22 @@ On Windows:
 py -m pip install "git+https://github.com/snwaf929-cpu/simo-language.git"
 ```
 
-Verify the installation:
+Verify the installation and install the Simo icons:
 
 ```bash
 simo --version
 simo doctor
+simo setup-icons
+```
+
+`setup-icons` installs the bundled Simo language extension into detected VS Code and Cursor installations. On Windows it also registers `.simo` as **Simo Source File** in File Explorer. Reload the editor after running it.
+
+Explicit editor choices are available:
+
+```bash
+simo setup-icons --editor vscode
+simo setup-icons --editor cursor
+simo setup-icons --editor both
 ```
 
 ## Native desktop: `.simo` only
@@ -44,6 +55,16 @@ simo build --target desktop
 ```
 
 The first desktop build automatically installs Simo's PyInstaller-based packager when it is not already available. The resulting application includes Python and the Simo runtime, so the person running the finished executable does not need to install Simo or Python.
+
+Desktop builds use the official Simo logo automatically instead of the Python icon. New desktop projects also receive editable icon files:
+
+```text
+assets/icon.ico   Windows executable icon
+assets/icon.png   Native window and Linux icon
+assets/icon.icns  macOS application icon
+```
+
+Replace those files to give a specific project its own branding. When a project icon is absent, the bundled Simo icon remains the fallback.
 
 Desktop builds are host-specific:
 
@@ -146,9 +167,10 @@ simo check [file]                    Parse and validate source and imports
 simo build [file] --target ...       Build web, PWA, or native desktop output
 simo dev [file] [--target ...]       Run a development web server or native window
 simo new NAME --template ...         Create console/web/PWA/desktop projects
+simo setup-icons                     Install editor and Windows .simo icons
 simo fmt FILES...                    Format source files
 simo test [path]                     Run test_*.simo files
-simo doctor                          Check native and packaging support
+simo doctor                          Check native, packaging, and icon support
 ```
 
 A `simo.toml` project lets commands omit the file and target:
@@ -174,6 +196,7 @@ output = "dist"
 - Click and input-change events
 - Element changes and notifications
 - Web, PWA, native desktop runtime, and executable packaging
+- Official desktop, Windows file-type, VS Code, and Cursor branding
 - Formatter, checker, test runner, project generator, and development server
 - VS Code syntax definition and snippets under `editors/vscode`
 

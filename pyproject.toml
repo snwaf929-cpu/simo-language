@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "simo-language"
-version = "0.6.0"
+version = "0.6.1"
 description = "A readable programming language for console programs, websites, installable PWAs, and native desktop apps"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -38,4 +38,13 @@ where = ["."]
 include = ["simo*"]
 
 [tool.setuptools.package-data]
-simo = ["py.typed"]
+simo = [
+  "py.typed",
+  "resources/icons/*.ico",
+  "resources/icons/*.icns",
+  "resources/icons/*.png",
+  "resources/editor/*.json",
+  "resources/editor/icons/*.png",
+  "resources/editor/syntaxes/*.json",
+  "resources/editor/snippets/*.json",
+]
