@@ -1,0 +1,5 @@
+[project]
+name = "simo-counter"
+entry = "main.simo"
+target = "web"
+output = "dist"

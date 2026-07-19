@@ -1,9 +1,9 @@
-"""Lexical environments for Simo execution."""
+"""Lexical environments used by the Simo interpreter."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Callable
+from dataclasses import dataclass
+from typing import Any
 
 from simo.errors import RuntimeError as SimoRuntimeError
 
@@ -14,11 +14,10 @@ class Binding:
     is_const: bool = False
 
 
-@dataclass
 class Environment:
-    parent: Environment | None = None
-    bindings: dict[str, Binding] = field(default_factory=dict)
-    functions: dict[str, Callable[..., Any]] = field(default_factory=dict)
+    def __init__(self, parent: Environment | None = None) -> None:
+        self.parent = parent
+        self.values: dict[str, Binding] = {}
 
     def define(
         self,
@@ -26,117 +25,58 @@ class Environment:
         value: Any,
         *,
         is_const: bool = False,
+        filename: str = "<stdin>",
         line: int = 0,
         column: int = 0,
-        filename: str = "<stdin>",
+        replace: bool = False,
     ) -> None:
-        if name in self.bindings:
+        if name in self.values and not replace:
             raise SimoRuntimeError(
                 f"Variable '{name}' is already defined in this scope",
                 filename,
                 line,
                 column,
             )
-        self.bindings[name] = Binding(value=value, is_const=is_const)
+        self.values[name] = Binding(value, is_const)
 
-    def declare_or_assign(
+    def resolve(self, name: str) -> tuple[Environment | None, Binding | None]:
+        environment: Environment | None = self
+        while environment is not None:
+            binding = environment.values.get(name)
+            if binding is not None:
+                return environment, binding
+            environment = environment.parent
+        return None, None
+
+    def get(
         self,
         name: str,
-        value: Any,
         *,
+        filename: str = "<stdin>",
         line: int = 0,
         column: int = 0,
-        filename: str = "<stdin>",
-    ) -> None:
-        """Handle `set name = value`: update nearest binding or create local."""
-        env, binding = self._resolve_binding(name)
-        if binding is not None:
-            if binding.is_const:
-                raise SimoRuntimeError(
-                    f"Cannot reassign constant '{name}'",
-                    filename,
-                    line,
-                    column,
-                )
-            env.bindings[name] = Binding(value=value, is_const=False)
-            return
-        self.define(name, value, is_const=False, line=line, column=column, filename=filename)
+    ) -> Any:
+        _, binding = self.resolve(name)
+        if binding is None:
+            raise SimoRuntimeError(
+                f"Undefined variable or action '{name}'", filename, line, column
+            )
+        return binding.value
 
     def assign(
         self,
         name: str,
         value: Any,
         *,
+        filename: str = "<stdin>",
         line: int = 0,
         column: int = 0,
-        filename: str = "<stdin>",
     ) -> None:
-        """Handle bare assignment: update nearest existing binding only."""
-        env, binding = self._resolve_binding(name)
-        if binding is None:
-            raise SimoRuntimeError(
-                f"Undefined variable '{name}'",
-                filename,
-                line,
-                column,
-            )
+        environment, binding = self.resolve(name)
+        if environment is None or binding is None:
+            raise SimoRuntimeError(f"Undefined variable '{name}'", filename, line, column)
         if binding.is_const:
             raise SimoRuntimeError(
-                f"Cannot reassign constant '{name}'",
-                filename,
-                line,
-                column,
+                f"Cannot reassign constant '{name}'", filename, line, column
             )
-        env.bindings[name] = Binding(value=value, is_const=False)
-
-    def get(
-        self,
-        name: str,
-        *,
-        line: int = 0,
-        column: int = 0,
-        filename: str = "<stdin>",
-    ) -> Any:
-        env, binding = self._resolve_binding(name)
-        if binding is None:
-            raise SimoRuntimeError(
-                f"Undefined variable '{name}'",
-                filename,
-                line,
-                column,
-            )
-        return binding.value
-
-    def _resolve_binding(self, name: str) -> tuple[Environment | None, Binding | None]:
-        env: Environment | None = self
-        while env is not None:
-            if name in env.bindings:
-                return env, env.bindings[name]
-            env = env.parent
-        return None, None
-
-    def get_function(
-        self,
-        name: str,
-        *,
-        line: int = 0,
-        column: int = 0,
-        filename: str = "<stdin>",
-    ) -> Callable[..., Any]:
-        env: Environment | None = self
-        while env is not None:
-            if name in env.functions:
-                return env.functions[name]
-            env = env.parent
-        raise SimoRuntimeError(
-            f"Undefined function '{name}'",
-            filename,
-            line,
-            column,
-        )
-
-    def define_function(self, name: str, func: Callable[..., Any]) -> None:
-        self.functions[name] = func
-
-    def child(self) -> Environment:
-        return Environment(parent=self)
+        environment.values[name] = Binding(value, False)

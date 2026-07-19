@@ -1,0 +1,5 @@
+[project]
+name = "simo-notes"
+entry = "main.simo"
+target = "app"
+output = "dist"

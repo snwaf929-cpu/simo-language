@@ -1,0 +1,33 @@
+{
+  "Action": {
+    "prefix": "action",
+    "body": ["action ${1:name}(${2})", "    ${0}", "end"],
+    "description": "Create a Simo action"
+  },
+  "If": {
+    "prefix": "if",
+    "body": ["if ${1:condition}", "    ${0}", "end"],
+    "description": "Create a Simo condition"
+  },
+  "For loop": {
+    "prefix": "loopfor",
+    "body": ["loop for ${1:item} in ${2:items}", "    ${0}", "end"],
+    "description": "Loop over a collection"
+  },
+  "Page": {
+    "prefix": "page",
+    "body": ["page \"${1:My App}\" size ${2:800x600} {", "    ${0}", "}"],
+    "description": "Create a Simo page"
+  },
+  "Button": {
+    "prefix": "button",
+    "body": [
+      "show button \"${1:Click me}\" named ${2:button} {",
+      "    when clicked:",
+      "        ${0}",
+      "    end",
+      "}"
+    ],
+    "description": "Create a button with a click event"
+  }
+}

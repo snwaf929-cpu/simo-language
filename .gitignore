@@ -1,9 +1,10 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-.eggs/
-dist/
 build/
-.pytest_cache/
+dist/
+.simo-dev/
 .venv/
 venv/
+.simo-storage.json
+.DS_Store

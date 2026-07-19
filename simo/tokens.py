@@ -8,81 +8,145 @@ from typing import Any
 
 
 class TokenType(Enum):
-  # Single-character tokens
-  LPAREN = auto()
-  RPAREN = auto()
-  COMMA = auto()
-  PLUS = auto()
-  MINUS = auto()
-  STAR = auto()
-  SLASH = auto()
+    # punctuation
+    LPAREN = auto()
+    RPAREN = auto()
+    LBRACE = auto()
+    RBRACE = auto()
+    LBRACKET = auto()
+    RBRACKET = auto()
+    COMMA = auto()
+    COLON = auto()
+    DOT = auto()
 
-  # Multi-character operators
-  EQ = auto()       # ==
-  NEQ = auto()      # !=
-  LT = auto()       # <
-  LTE = auto()      # <=
-  GT = auto()       # >
-  GTE = auto()      # >=
-  ASSIGN = auto()   # =
-  IS = auto()       # is (comparison alias for ==)
-  IS_NOT = auto()   # is not (comparison alias for !=)
+    # operators
+    PLUS = auto()
+    MINUS = auto()
+    STAR = auto()
+    SLASH = auto()
+    PERCENT = auto()
+    ASSIGN = auto()
+    EQ = auto()
+    NEQ = auto()
+    LT = auto()
+    LTE = auto()
+    GT = auto()
+    GTE = auto()
 
-  # Literals
-  IDENTIFIER = auto()
-  NUMBER = auto()
-  STRING = auto()
+    # literals
+    IDENTIFIER = auto()
+    NUMBER = auto()
+    STRING = auto()
+    DIMENSION = auto()
 
-  # Keywords
-  SET = auto()
-  FIX = auto()
-  ACTION = auto()
-  RETURN = auto()
-  END = auto()
-  IF = auto()
-  ELSE = auto()
-  LOOP = auto()
-  TIMES = auto()
-  WHILE = auto()
-  AND = auto()
-  OR = auto()
-  NOT = auto()
-  TRUE = auto()
-  FALSE = auto()
-  YES = auto()
-  NO = auto()
+    # core language
+    SET = auto()
+    FIX = auto()
+    ACTION = auto()
+    RETURN = auto()
+    END = auto()
+    IF = auto()
+    ELSE = auto()
+    LOOP = auto()
+    TIMES = auto()
+    WHILE = auto()
+    FOR = auto()
+    IN = auto()
+    BREAK = auto()
+    CONTINUE = auto()
+    IMPORT = auto()
+    ATTEMPT = auto()
+    IT = auto()
+    FAILS = auto()
 
-  # Structural
-  NEWLINE = auto()
-  EOF = auto()
+    # logical and primitive keywords
+    AND = auto()
+    OR = auto()
+    NOT = auto()
+    IS = auto()
+    TRUE = auto()
+    FALSE = auto()
+    YES = auto()
+    NO = auto()
+    NULL = auto()
+
+    # UI / app language
+    PAGE = auto()
+    SHOW = auto()
+    HEADING = auto()
+    TEXT = auto()
+    BUTTON = auto()
+    IMAGE = auto()
+    INPUT = auto()
+    BOX = auto()
+    NOTIFICATION = auto()
+    NAMED = auto()
+    PLACEHOLDER = auto()
+    SIZE = auto()
+    WHEN = auto()
+    CLICKED = auto()
+    CHANGES = auto()
+    CHANGE = auto()
+    OF = auto()
+    TO = auto()
+
+    NEWLINE = auto()
+    EOF = auto()
 
 
 KEYWORDS: dict[str, TokenType] = {
-  "set": TokenType.SET,
-  "fix": TokenType.FIX,
-  "action": TokenType.ACTION,
-  "return": TokenType.RETURN,
-  "end": TokenType.END,
-  "if": TokenType.IF,
-  "else": TokenType.ELSE,
-  "loop": TokenType.LOOP,
-  "times": TokenType.TIMES,
-  "while": TokenType.WHILE,
-  "and": TokenType.AND,
-  "or": TokenType.OR,
-  "not": TokenType.NOT,
-  "true": TokenType.TRUE,
-  "false": TokenType.FALSE,
-  "yes": TokenType.YES,
-  "no": TokenType.NO,
-  "is": TokenType.IS,
+    "set": TokenType.SET,
+    "fix": TokenType.FIX,
+    "action": TokenType.ACTION,
+    "return": TokenType.RETURN,
+    "end": TokenType.END,
+    "if": TokenType.IF,
+    "else": TokenType.ELSE,
+    "loop": TokenType.LOOP,
+    "times": TokenType.TIMES,
+    "while": TokenType.WHILE,
+    "for": TokenType.FOR,
+    "in": TokenType.IN,
+    "break": TokenType.BREAK,
+    "continue": TokenType.CONTINUE,
+    "import": TokenType.IMPORT,
+    "attempt": TokenType.ATTEMPT,
+    "it": TokenType.IT,
+    "fails": TokenType.FAILS,
+    "and": TokenType.AND,
+    "or": TokenType.OR,
+    "not": TokenType.NOT,
+    "is": TokenType.IS,
+    "true": TokenType.TRUE,
+    "false": TokenType.FALSE,
+    "yes": TokenType.YES,
+    "no": TokenType.NO,
+    "null": TokenType.NULL,
+    "page": TokenType.PAGE,
+    "show": TokenType.SHOW,
+    "heading": TokenType.HEADING,
+    "text": TokenType.TEXT,
+    "button": TokenType.BUTTON,
+    "image": TokenType.IMAGE,
+    "input": TokenType.INPUT,
+    "box": TokenType.BOX,
+    "notification": TokenType.NOTIFICATION,
+    "named": TokenType.NAMED,
+    "placeholder": TokenType.PLACEHOLDER,
+    "size": TokenType.SIZE,
+    "when": TokenType.WHEN,
+    "clicked": TokenType.CLICKED,
+    "changes": TokenType.CHANGES,
+    "change": TokenType.CHANGE,
+    "of": TokenType.OF,
+    "to": TokenType.TO,
 }
 
 
 @dataclass(frozen=True)
 class Token:
-  type: TokenType
-  lexeme: str
-  line: int
-  column: int
-  literal: Any = None
+    type: TokenType
+    lexeme: str
+    line: int
+    column: int
+    literal: Any = None

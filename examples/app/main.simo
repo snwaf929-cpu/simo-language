@@ -1,0 +1,22 @@
+page "Simo Notes" size 720x540 {
+    set saved_note = load("note", "")
+
+    show heading "Notes" named title {
+        size big
+    }
+
+    show input box named note_input placeholder "Write a note"
+    show text "Stored note: " + saved_note named stored_note
+
+    show button "Save note" named save_button {
+        background #17191c
+        color white
+        rounded
+
+        when clicked:
+            save("note", note_input.value)
+            change text of stored_note to "Stored note: " + note_input.value
+            show notification "Note saved"
+        end
+    }
+}

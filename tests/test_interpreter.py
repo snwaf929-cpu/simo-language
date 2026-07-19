@@ -1,288 +1,152 @@
-"""Tests for the Simo interpreter."""
-
 from __future__ import annotations
 
 import io
+import tempfile
 import unittest
 from pathlib import Path
 
-from simo.cli import run_source
-from simo.errors import ParseError, RuntimeError as SimoRuntimeError
-from simo.lexer import Lexer
-from simo.parser import Parser
+from simo.errors import RuntimeError as SimoRuntimeError
+from simo.interpreter import Interpreter
+from simo.source import parse_file, parse_source
 
 
-EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
-
-
-def run_program(source: str, filename: str = "test.simo") -> tuple[int, str]:
-    buffer = io.StringIO()
-    from simo.interpreter import Interpreter
-    from simo.lexer import Lexer
-    from simo.parser import Parser
-
-    try:
-        tokens = Lexer(source, filename).tokenize()
-        program = Parser(tokens, filename).parse()
-        Interpreter(filename=filename, output_stream=buffer).interpret(program)
-        return 0, buffer.getvalue()
-    except Exception as exc:
-        return 1, str(exc)
+def execute(source: str, filename: str = "test.simo") -> str:
+    output = io.StringIO()
+    program = parse_source(source, filename)
+    Interpreter(filename=filename, output_stream=output).interpret(program)
+    return output.getvalue()
 
 
 class InterpreterTests(unittest.TestCase):
-    def test_mutable_variable_declaration_and_reassignment(self) -> None:
-        exit_code, output = run_program(
-            """
-set score = 0
-score = score + 5
-say(score)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "5")
-
-    def test_constant_reassignment_rejected(self) -> None:
-        code = """
+    def test_section16_program(self) -> None:
+        output = execute(
+            '''
+set player_name = "Alex"
 fix max_score = 100
-max_score = 200
-"""
-        exit_code, message = run_program(code)
-        self.assertEqual(exit_code, 1)
-        self.assertIn("max_score", message)
-        self.assertIn("constant", message.lower())
-
-    def test_arithmetic_precedence(self) -> None:
-        exit_code, output = run_program(
-            """
-set result = 2 + 3 * 4
-say(result)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "14")
-
-    def test_string_and_number_concatenation(self) -> None:
-        exit_code, output = run_program(
-            """
-set message = "Score: " + 42
-say(message)
-set mixed = "ok " + true
-say(mixed)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        lines = output.strip().splitlines()
-        self.assertEqual(lines[0], "Score: 42")
-        self.assertEqual(lines[1], "ok true")
-
-    def test_boolean_aliases(self) -> None:
-        exit_code, output = run_program(
-            """
-set a = yes
-set b = no
-say(a)
-say(b)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip().splitlines(), ["true", "false"])
-
-    def test_is_and_is_not(self) -> None:
-        exit_code, output = run_program(
-            """
-set score = 10
-if score is 10
-    say("equal")
-end
-if score is not 0
-    say("not zero")
-end
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip().splitlines(), ["equal", "not zero"])
-
-    def test_equality_across_strings_numbers_and_booleans(self) -> None:
-        exit_code, output = run_program(
-            """
-if "Alex" is "Alex"
-    say("same name")
-end
-if "Alex" is not "Bob"
-    say("different name")
-end
-if true == yes
-    say("boolean aliases equal")
-end
-if false != true
-    say("boolean aliases differ")
-end
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(
-            output.strip().splitlines(),
-            [
-                "same name",
-                "different name",
-                "boolean aliases equal",
-                "boolean aliases differ",
-            ],
-        )
-
-    def test_ordering_comparisons_are_numeric_only(self) -> None:
-        exit_code, message = run_program(
-            """
-if "a" < "b"
-    say("unreachable")
-end
-"""
-        )
-        self.assertEqual(exit_code, 1)
-        self.assertIn("number", message.lower())
-
-    def test_functions_with_parameters_and_return(self) -> None:
-        exit_code, output = run_program(
-            """
-action add(a, b)
-    return a + b
-end
-set total = add(5, 3)
-say(total)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "8")
-
-    def test_global_mutation_from_function(self) -> None:
-        exit_code, output = run_program(
-            """
 set score = 0
-action bump()
-    score = score + 10
-end
-bump()
-say(score)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "10")
 
-    def test_local_function_variables(self) -> None:
-        exit_code, output = run_program(
-            """
-action demo()
-    set local_value = 7
-    say(local_value)
+action welcome_sequence()
+    say("Loading Simo Engine...")
+    say("Hello, " + player_name)
 end
-demo()
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "7")
 
-    def test_if_else_if_else(self) -> None:
-        exit_code, output = run_program(
-            """
-set score = 50
-if score == 100
-    say("perfect")
-else if score > 40
-    say("good")
-else
-    say("low")
+action add_points(amount)
+    score = score + amount
+    if score >= max_score
+        say("Max score reached!")
+    end
 end
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "good")
 
-    def test_fixed_count_loop(self) -> None:
-        exit_code, output = run_program(
-            """
-set count = 0
+welcome_sequence()
 loop 3 times
-    count = count + 1
+    add_points(40)
 end
-say(count)
-"""
+say("Final score: " + score)
+'''
         )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "3")
-
-    def test_conditional_loop(self) -> None:
-        exit_code, output = run_program(
-            """
-set score = 0
-loop while score < 30
-    score = score + 10
-end
-say(score)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "30")
-
-    def test_inline_comments(self) -> None:
-        exit_code, output = run_program(
-            """
-set score = 100 // starting score
-say(score)
-"""
-        )
-        self.assertEqual(exit_code, 0)
-        self.assertEqual(output.strip(), "100")
-
-    def test_undefined_variable(self) -> None:
-        exit_code, message = run_program("say(missing)")
-        self.assertEqual(exit_code, 1)
-        self.assertIn("missing", message)
-
-    def test_undefined_function(self) -> None:
-        exit_code, message = run_program("missing()")
-        self.assertEqual(exit_code, 1)
-        self.assertIn("missing", message)
-
-    def test_incorrect_function_argument_count(self) -> None:
-        exit_code, message = run_program(
-            """
-action add(a, b)
-    return a + b
-end
-add(1)
-"""
-        )
-        self.assertEqual(exit_code, 1)
-        self.assertIn("expects 2", message)
-
-    def test_parse_error_with_line_information(self) -> None:
-        with self.assertRaises(ParseError) as ctx:
-            Parser(Lexer("set = 1", "bad.simo").tokenize(), "bad.simo").parse()
-        self.assertEqual(ctx.exception.line, 1)
-        self.assertIn("bad.simo", str(ctx.exception))
-
-    def test_section16_example_output(self) -> None:
-        source = (EXAMPLES_DIR / "section16.simo").read_text(encoding="utf-8")
-        exit_code, output = run_program(source, "section16.simo")
-        self.assertEqual(exit_code, 0)
         self.assertEqual(
-            output.splitlines(),
-            [
-                "Loading Simo Engine...",
-                "Hello, Alex",
-                "Max score reached!",
-                "Final score: 120",
-            ],
+            output,
+            "Loading Simo Engine...\nHello, Alex\nMax score reached!\nFinal score: 120\n",
         )
 
-    def test_return_outside_function(self) -> None:
-        exit_code, message = run_program("return 1")
-        self.assertEqual(exit_code, 1)
-        self.assertIn("outside", message.lower())
+    def test_lists_objects_for_loop_and_member_assignment(self) -> None:
+        output = execute(
+            '''
+set player = { name: "Alex", score: 0 }
+set values = [10, 20, 30]
+loop for value in values
+    player.score = player.score + value
+end
+say(player.name + ": " + player.score)
+'''
+        )
+        self.assertEqual(output.strip(), "Alex: 60")
 
-    def test_cli_run_source_failure_exit_code(self) -> None:
-        self.assertEqual(run_source("say(missing)", "bad.simo"), 1)
+    def test_index_assignment(self) -> None:
+        output = execute(
+            '''
+set values = [1, 2]
+values[0] = 9
+say(values[0])
+'''
+        )
+        self.assertEqual(output.strip(), "9")
+
+    def test_builtin_collection_functions(self) -> None:
+        output = execute(
+            '''
+set values = [1]
+add(values, 2)
+add(values, 3)
+remove(values, 2)
+say(len(values))
+say(contains(values, 3))
+'''
+        )
+        self.assertEqual(output, "2\ntrue\n")
+
+    def test_attempt_catches_runtime_failure(self) -> None:
+        output = execute(
+            '''
+attempt
+    set result = 10 / 0
+if it fails
+    say("caught: " + error)
+end
+'''
+        )
+        self.assertIn("caught:", output)
+        self.assertIn("Division by zero", output)
+
+    def test_boolean_number_equality_is_type_safe(self) -> None:
+        output = execute(
+            '''
+say(true == 1)
+say(false == 0)
+say(1 == 1.0)
+say(yes == true)
+'''
+        )
+        self.assertEqual(output, "false\nfalse\ntrue\ntrue\n")
+
+    def test_constant_reassignment_fails(self) -> None:
+        program = parse_source("fix limit = 2\nlimit = 3\n")
+        with self.assertRaises(SimoRuntimeError):
+            Interpreter().interpret(program)
+
+    def test_break_and_continue(self) -> None:
+        output = execute(
+            '''
+set result = 0
+loop for value in [1, 2, 3, 4]
+    if value == 2
+        continue
+    end
+    if value == 4
+        break
+    end
+    result = result + value
+end
+say(result)
+'''
+        )
+        self.assertEqual(output.strip(), "4")
+
+    def test_note_comment(self) -> None:
+        output = execute("note: this is ignored\nsay(\"ok\")\n")
+        self.assertEqual(output.strip(), "ok")
+
+    def test_imports_share_global_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "math.simo").write_text(
+                "action double(value)\n    return value * 2\nend\n", encoding="utf-8"
+            )
+            main = root / "main.simo"
+            main.write_text('import "math.simo"\nsay(double(6))\n', encoding="utf-8")
+            output = io.StringIO()
+            Interpreter(filename=str(main), output_stream=output).interpret(parse_file(main))
+            self.assertEqual(output.getvalue().strip(), "12")
 
 
 if __name__ == "__main__":

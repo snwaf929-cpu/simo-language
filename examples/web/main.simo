@@ -1,0 +1,27 @@
+page "Simo Counter" size 600x460 {
+    set count = 0
+
+    show heading "Simo Counter" named title {
+        size big
+        align center
+    }
+
+    show text "Count: " + count named counter_text {
+        align center
+        font size 24
+    }
+
+    show button "Add one" named add_button {
+        background #17191c
+        color white
+        padding 14
+        rounded
+        position center
+
+        when clicked:
+            count = count + 1
+            change text of counter_text to "Count: " + count
+            show notification "Count updated"
+        end
+    }
+}

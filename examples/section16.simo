@@ -15,9 +15,7 @@ action add_points(amount)
 end
 
 welcome_sequence()
-
 loop 3 times
     add_points(40)
 end
-
 say("Final score: " + score)

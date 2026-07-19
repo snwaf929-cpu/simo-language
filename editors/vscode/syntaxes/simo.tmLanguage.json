@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Simo",
+  "scopeName": "source.simo",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#actions" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.simo", "match": "//.*$" },
+        { "name": "comment.line.note.simo", "match": "\\bnote:.*$" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.simo",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [{ "name": "constant.character.escape.simo", "match": "\\\\[ntr\"\\\\]" }]
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.dimension.simo", "match": "\\b\\d+x\\d+\\b" },
+        { "name": "constant.numeric.simo", "match": "\\b\\d+(?:\\.\\d+)?\\b" }
+      ]
+    },
+    "keywords": {
+      "name": "keyword.control.simo",
+      "match": "\\b(set|fix|action|return|end|if|else|loop|times|while|for|in|break|continue|import|attempt|it|fails|and|or|not|is|page|show|heading|text|button|image|input|box|notification|named|placeholder|size|when|clicked|changes|change|of|to)\\b"
+    },
+    "constants": {
+      "name": "constant.language.simo",
+      "match": "\\b(true|false|yes|no|null)\\b"
+    },
+    "actions": {
+      "name": "entity.name.function.simo",
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()"
+    },
+    "operators": {
+      "name": "keyword.operator.simo",
+      "match": "==|!=|<=|>=|[+\\-*/%=<>]"
+    }
+  }
+}

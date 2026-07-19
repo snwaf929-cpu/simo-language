@@ -1,0 +1,32 @@
+{
+  "name": "simo-language-support",
+  "displayName": "Simo Language Support",
+  "description": "Syntax highlighting, brackets, comments, and snippets for Simo",
+  "version": "0.5.0",
+  "publisher": "simo-language",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages", "Snippets"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "simo",
+        "aliases": ["Simo", "simo"],
+        "extensions": [".simo"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "simo",
+        "scopeName": "source.simo",
+        "path": "./syntaxes/simo.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "simo",
+        "path": "./snippets/simo.json"
+      }
+    ]
+  }
+}

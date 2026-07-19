@@ -4,14 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "simo-language"
-version = "0.2.0"
-description = "Interpreter for the Simo programming language"
+version = "0.5.0"
+description = "A readable programming language for console programs, websites, installable web apps, and desktop scaffolds"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
+authors = [{ name = "Simo Language contributors" }]
+keywords = ["programming-language", "compiler", "interpreter", "web", "pwa"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Compilers",
+  "Topic :: Software Development :: Interpreters",
+]
 
 [project.scripts]
 simo = "simo.cli:main"
+
+[project.urls]
+Repository = "https://github.com/snwaf929-cpu/simo-language"
+Issues = "https://github.com/snwaf929-cpu/simo-language/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

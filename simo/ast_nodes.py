@@ -1,4 +1,4 @@
-"""Abstract syntax tree node definitions."""
+"""Abstract syntax tree nodes shared by the interpreter and compilers."""
 
 from __future__ import annotations
 
@@ -18,11 +18,14 @@ class Program(Node):
 
 
 # Statements
-
-
 @dataclass
 class Stmt(Node):
     pass
+
+
+@dataclass
+class ImportStmt(Stmt):
+    path: str = ""
 
 
 @dataclass
@@ -34,7 +37,7 @@ class VarDecl(Stmt):
 
 @dataclass
 class Assign(Stmt):
-    name: str = ""
+    target: Expr | None = None
     value: Expr | None = None
 
 
@@ -73,9 +76,64 @@ class LoopWhile(Stmt):
     body: list[Stmt] = field(default_factory=list)
 
 
+@dataclass
+class LoopFor(Stmt):
+    name: str = ""
+    iterable: Expr | None = None
+    body: list[Stmt] = field(default_factory=list)
+
+
+@dataclass
+class BreakStmt(Stmt):
+    pass
+
+
+@dataclass
+class ContinueStmt(Stmt):
+    pass
+
+
+@dataclass
+class AttemptStmt(Stmt):
+    body: list[Stmt] = field(default_factory=list)
+    failure_body: list[Stmt] = field(default_factory=list)
+
+
+@dataclass
+class PageDecl(Stmt):
+    title: Expr | None = None
+    size: tuple[int, int] | None = None
+    body: list[Stmt] = field(default_factory=list)
+
+
+@dataclass
+class UiEvent(Node):
+    name: str = ""
+    body: list[Stmt] = field(default_factory=list)
+
+
+@dataclass
+class ShowElement(Stmt):
+    kind: str = "text"
+    content: Expr | None = None
+    name: str | None = None
+    attributes: dict[str, Any] = field(default_factory=dict)
+    events: list[UiEvent] = field(default_factory=list)
+
+
+@dataclass
+class ChangeElement(Stmt):
+    property_name: str = ""
+    target_name: str = ""
+    value: Expr | None = None
+
+
+@dataclass
+class ShowNotification(Stmt):
+    value: Expr | None = None
+
+
 # Expressions
-
-
 @dataclass
 class Expr(Node):
     pass
@@ -89,6 +147,16 @@ class Literal(Expr):
 @dataclass
 class Variable(Expr):
     name: str = ""
+
+
+@dataclass
+class ListLiteral(Expr):
+    items: list[Expr] = field(default_factory=list)
+
+
+@dataclass
+class ObjectLiteral(Expr):
+    items: list[tuple[str, Expr]] = field(default_factory=list)
 
 
 @dataclass
@@ -106,5 +174,17 @@ class Binary(Expr):
 
 @dataclass
 class Call(Expr):
-    callee: str = ""
+    callee: Expr | None = None
     arguments: list[Expr] = field(default_factory=list)
+
+
+@dataclass
+class Get(Expr):
+    object: Expr | None = None
+    name: str = ""
+
+
+@dataclass
+class Index(Expr):
+    object: Expr | None = None
+    index: Expr | None = None
