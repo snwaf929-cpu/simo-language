@@ -16,11 +16,15 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install .
       - run: python -m unittest discover -s tests -v
+      - run: node editors/vscode/test/language.test.js
       - run: simo run examples/section16.simo
       - run: simo build examples/web/main.simo --target web --output /tmp/simo-web
       - run: simo build examples/pwa/main.simo --target pwa --output /tmp/simo-pwa

@@ -1,4 +1,14 @@
 {
+  "Mutable variable": {
+    "prefix": "set",
+    "body": ["set ${1:name} = ${2:value}"],
+    "description": "Create a mutable Simo variable"
+  },
+  "Constant": {
+    "prefix": "fix",
+    "body": ["fix ${1:name} = ${2:value}"],
+    "description": "Create an immutable Simo constant"
+  },
   "Action": {
     "prefix": "action",
     "body": ["action ${1:name}(${2})", "    ${0}", "end"],
@@ -9,15 +19,30 @@
     "body": ["if ${1:condition}", "    ${0}", "end"],
     "description": "Create a Simo condition"
   },
+  "If else": {
+    "prefix": "ifelse",
+    "body": ["if ${1:condition}", "    ${2}", "else", "    ${0}", "end"],
+    "description": "Create a Simo if/else condition"
+  },
   "For loop": {
     "prefix": "loopfor",
     "body": ["loop for ${1:item} in ${2:items}", "    ${0}", "end"],
     "description": "Loop over a collection"
   },
+  "Times loop": {
+    "prefix": "looptimes",
+    "body": ["loop ${1:5} times", "    ${0}", "end"],
+    "description": "Repeat code a fixed number of times"
+  },
   "Page": {
     "prefix": "page",
     "body": ["page \"${1:My App}\" size ${2:800x600} {", "    ${0}", "}"],
     "description": "Create a Simo page"
+  },
+  "Input": {
+    "prefix": "input",
+    "body": ["show input box named ${1:input_name} placeholder \"${2:Enter text}\""],
+    "description": "Show a named input box"
   },
   "Button": {
     "prefix": "button",
@@ -29,5 +54,15 @@
       "}"
     ],
     "description": "Create a button with a click event"
+  },
+  "Object": {
+    "prefix": "object",
+    "body": ["{", "    ${1:key}: ${2:value}", "}"],
+    "description": "Create an object with properties"
+  },
+  "Attempt": {
+    "prefix": "attempt",
+    "body": ["attempt", "    ${1}", "if it fails", "    ${0}", "end"],
+    "description": "Handle a runtime failure"
   }
 }

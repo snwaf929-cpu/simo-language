@@ -1,8 +1,8 @@
 {
   "name": "simo-language-support",
   "displayName": "Simo Language Support",
-  "description": "Syntax highlighting, brackets, comments, snippets, and file icons for Simo",
-  "version": "0.6.1",
+  "description": "Syntax colors, autocomplete, member intelligence, hovers, diagnostics, symbols, snippets, and file icons for Simo",
+  "version": "0.7.0",
   "publisher": "simo-language",
   "icon": "icons/simo.png",
   "engines": {
@@ -10,8 +10,13 @@
   },
   "categories": [
     "Programming Languages",
-    "Snippets"
+    "Snippets",
+    "Linters"
   ],
+  "activationEvents": [
+    "onLanguage:simo"
+  ],
+  "main": "./extension.js",
   "contributes": {
     "languages": [
       {
