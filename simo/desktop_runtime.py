@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
 from simo import ast_nodes as ast
+from simo.branding import bundled_icon
 from simo.desktop_element import DesktopElement
 from simo.desktop_native_api import DesktopNativeApiMixin
 from simo.desktop_ui import DesktopUiMixin
 from simo.environment import Environment
 from simo.errors import BuildError
 from simo.interpreter import Interpreter
+from simo.project import load_project
 from simo.source import load_program
 
 
@@ -89,6 +92,31 @@ class DesktopRuntime(DesktopNativeApiMixin, DesktopUiMixin, Interpreter):
             self.root.geometry(f"{width}x{height}")
             try:
                 self.root.minsize(min(width, 320), min(height, 240))
+            except Exception:
+                pass
+        self._configure_window_icon()
+
+    def _configure_window_icon(self) -> None:
+        """Use project branding when supplied, otherwise Simo's built-in logo."""
+
+        project = load_project(self.source_path)
+        assets = project.root / "assets"
+        png_icon = assets / "icon.png"
+        if not png_icon.exists():
+            png_icon = bundled_icon("png")
+        try:
+            image = self.tk.PhotoImage(file=str(png_icon))
+            self.images.append(image)
+            self.root.iconphoto(True, image)
+        except Exception:
+            pass
+
+        if sys.platform == "win32":
+            ico_icon = assets / "icon.ico"
+            if not ico_icon.exists():
+                ico_icon = bundled_icon("ico")
+            try:
+                self.root.iconbitmap(default=str(ico_icon))
             except Exception:
                 pass
 
